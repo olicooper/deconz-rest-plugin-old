@@ -420,6 +420,8 @@ extern const quint64 keenhomeMacPrefix;
 extern const quint64 lutronMacPrefix;
 extern const quint64 netvoxMacPrefix;
 extern const quint64 osramMacPrefix;
+extern const quint64 osram2MacPrefix;
+extern const quint64 osram3MacPrefix;
 extern const quint64 philipsMacPrefix;
 extern const quint64 sinopeMacPrefix;
 extern const quint64 stMacPrefix;
@@ -494,6 +496,8 @@ inline bool checkMacVendor(quint64 addr, quint16 vendor)
         case VENDOR_OSRAM:
         case VENDOR_OSRAM_STACK:
             return prefix == osramMacPrefix ||
+                   prefix == osram2MacPrefix ||
+                   prefix == osram3MacPrefix ||
                    prefix == heimanMacPrefix;
         case VENDOR_PHILIPS:
             return prefix == philipsMacPrefix;

@@ -89,6 +89,8 @@ const quint64 samjinMacPrefix     = 0x286d970000000000ULL;
 const quint64 sinopeMacPrefix     = 0x500b910000000000ULL;
 const quint64 ecozyMacPrefix      = 0x70b3d50000000000ULL;
 const quint64 osramMacPrefix      = 0x8418260000000000ULL;
+const quint64 osram2MacPrefix     = 0x000D6F0000000000ULL;
+const quint64 osram3MacPrefix     = 0x7CB03E0000000000ULL;
 const quint64 silabsMacPrefix     = 0x90fd9f0000000000ULL;
 const quint64 silabs2MacPrefix    = 0xcccccc0000000000ULL;
 const quint64 silabs3MacPrefix    = 0xec1bbd0000000000ULL;
@@ -195,6 +197,7 @@ static const SupportedDevice supportedDevices[] = {
     { VENDOR_UBISYS, "S1", ubisysMacPrefix },
     { VENDOR_UBISYS, "S2", ubisysMacPrefix },
     { VENDOR_NONE, "Z716A", netvoxMacPrefix },
+    { VENDOR_OSRAM, "Lightify Switch Mini", osram2MacPrefix }, // OSRAM Lightify Switch Mini
     // { VENDOR_OSRAM_STACK, "Plug", osramMacPrefix }, // OSRAM plug - exposed only as light
     { VENDOR_OSRAM_STACK, "CO_", heimanMacPrefix }, // Heiman CO sensor
     { VENDOR_OSRAM_STACK, "DOOR_", heimanMacPrefix }, // Heiman door/window sensor - older model
@@ -14435,7 +14438,8 @@ void DeRestPluginPrivate::delayedFastEnddeviceProbe(const deCONZ::NodeEvent *eve
             }
         }
         else if (sensor->modelId() == QLatin1String("Remote switch") || // Legrand switch
-                 sensor->modelId() == QLatin1String("Shutters central remote switch")) // Legrand switch
+                 sensor->modelId() == QLatin1String("Shutters central remote switch") || // Legrand switch
+                 sensor->modelId() == QLatin1String("Lightify Switch Mini"))
         {
             checkSensorGroup(sensor);
             checkSensorBindingsForClientClusters(sensor);

@@ -1180,6 +1180,13 @@ bool DeRestPluginPrivate::sendConfigureReportingRequest(BindingTask &bt)
             rq.maxInterval = 43200;    // according to technical manual
             rq.reportableChange8bit = 0;
         }
+        else if (sensor && (sensor->modelId() == QLatin1String("Lightify Switch Mini")) // OSRAM Lightify Switch Mini
+        {
+            rq.attributeId = 0x0020;   // battery voltage
+            rq.minInterval = 300;
+            rq.maxInterval = 60 * 45;
+            rq.reportableChange8bit = 1;
+        }
         else
         {
             rq.minInterval = 300;
@@ -1998,7 +2005,9 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
         sensor->modelId().startsWith(QLatin1String("1116-S")) ||
         sensor->modelId().startsWith(QLatin1String("1117-S")) ||
         // Hive
-        sensor->modelId() == QLatin1String("MOT003"))
+        sensor->modelId() == QLatin1String("MOT003") ||
+        // OSRAM
+        sensor->modelId() == QLatin1String("Lightify Switch Mini"))
     {
         deviceSupported = true;
         if (!sensor->node()->nodeDescriptor().receiverOnWhenIdle() ||
@@ -2116,7 +2125,8 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
                      sensor->modelId().startsWith(QLatin1String("1117-S")) ||
                      sensor->modelId().startsWith(QLatin1String("3326-L")) ||
                      sensor->modelId().startsWith(QLatin1String("3305-S")) ||
-                     sensor->modelId() == QLatin1String("113D"))
+                     sensor->modelId() == QLatin1String("113D") ||
+                     sensor->modelId() == QLatin1String("Lightify Switch Mini"))
             {
                 val = sensor->getZclValue(*i, 0x0020); // battery voltage
             }
@@ -2539,6 +2549,13 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         clusters.push_back(LEVEL_CLUSTER_ID);
         srcEndpoints.push_back(sensor->fingerPrint().endpoint);
     }
+    // OSRAM Lightify Switch Mini
+    else if (sensor->modelId() == QLatin1String("Lightify Switch Mini"))
+    {
+        clusters.push_back(ONOFF_CLUSTER_ID);
+        clusters.push_back(LEVEL_CLUSTER_ID);
+        srcEndpoints.push_back(sensor->fingerPrint().endpoint);
+    }
     else
     {
         return false;
@@ -2661,7 +2678,8 @@ void DeRestPluginPrivate::checkSensorGroup(Sensor *sensor)
         sensor->modelId().startsWith(QLatin1String("TRADFRI remote control")) ||
         sensor->modelId().startsWith(QLatin1String("TRADFRI wireless dimmer")) ||
         sensor->modelId().startsWith(QLatin1String("SYMFONISK")) ||
-        sensor->modelId().startsWith(QLatin1String("902010/23"))) // bitron remote
+        sensor->modelId().startsWith(QLatin1String("902010/23")) || // bitron remote
+        sensor->modelId() == QLatin1String("Lightify Switch Mini"))
     {
 
     }
