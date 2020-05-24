@@ -1923,6 +1923,9 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
         sensor->modelId().startsWith(QLatin1String("FYRTUR")) ||
         sensor->modelId().startsWith(QLatin1String("KADRILJ")) ||
         sensor->modelId().startsWith(QLatin1String("SYMFONISK")) ||
+        // OSRAM
+        sensor->modelId() == QLatin1String("Lightify Switch Mini") || // Mini remote with > and <
+        sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") || // 4 button remote
         // Keen Home
         sensor->modelId().startsWith(QLatin1String("SV01-")) ||
         // Trust ZPIR-8000
@@ -2496,6 +2499,25 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
     //     clusters.push_back(LEVEL_CLUSTER_ID);
     //     srcEndpoints.push_back(sensor->fingerPrint().endpoint);
     // }
+    // OSRAM mini switch
+    else if (sensor->modelId() == QLatin1String("Lightify Switch Mini") )
+    {
+        clusters.push_back(ONOFF_CLUSTER_ID);
+        clusters.push_back(LEVEL_CLUSTER_ID);
+        //clusters.push_back(SCENE_CLUSTER_ID);
+        srcEndpoints.push_back(sensor->fingerPrint().endpoint);
+    }
+    // OSRAM 4 button mini switch
+    else if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") )
+    {
+        clusters.push_back(ONOFF_CLUSTER_ID);
+        clusters.push_back(LEVEL_CLUSTER_ID);
+        clusters.push_back(SCENE_CLUSTER_ID);
+        srcEndpoints.push_back(0x01);
+        srcEndpoints.push_back(0x02);
+        srcEndpoints.push_back(0x03);
+        srcEndpoints.push_back(0x04);
+    }
     // LEGRAND Remote switch, simple and double
     else if (sensor->modelId() == QLatin1String("Remote switch") ||
              sensor->modelId() == QLatin1String("Double gangs remote switch"))

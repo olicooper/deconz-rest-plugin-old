@@ -92,6 +92,7 @@ const quint64 sinopeMacPrefix     = 0x500b910000000000ULL;
 const quint64 silabs4MacPrefix    = 0x680ae20000000000ULL;
 const quint64 ecozyMacPrefix      = 0x70b3d50000000000ULL;
 const quint64 osramMacPrefix      = 0x8418260000000000ULL;
+const quint64 osram2MacPrefix     = 0x7CB03E0000000000ULL;
 const quint64 silabsMacPrefix     = 0x90fd9f0000000000ULL;
 const quint64 zhejiangMacPrefix   = 0xb0ce180000000000ULL;
 const quint64 silabs2MacPrefix    = 0xcccccc0000000000ULL;
@@ -206,6 +207,8 @@ static const SupportedDevice supportedDevices[] = {
     { VENDOR_UBISYS, "S2", ubisysMacPrefix },
     { VENDOR_NONE, "Z716A", netvoxMacPrefix },
     // { VENDOR_OSRAM_STACK, "Plug", osramMacPrefix }, // OSRAM plug - exposed only as light
+    { VENDOR_OSRAM, "Lightify Switch Mini", emberMacPrefix }, // Osram mini remote
+    { VENDOR_OSRAM, "Switch 4x EU-LIGHTIFY", emberMacPrefix }, // Osram 4 button remote
     { VENDOR_OSRAM_STACK, "CO_", heimanMacPrefix }, // Heiman CO sensor
     { VENDOR_OSRAM_STACK, "DOOR_", heimanMacPrefix }, // Heiman door/window sensor - older model
     { VENDOR_OSRAM_STACK, "PIR_", heimanMacPrefix }, // Heiman motion sensor
@@ -751,15 +754,22 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
                     {
                         sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
                     }
+                    else if (sensorNode->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY"))) //Osram remote
+                    {
+                        sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
+                    }
                     else
                     {
                         sensorNode = 0; // not supported
                     }
                 }
             }
+            
+            DBG_Printf(DBG_INFO, "MyDebug 1\n");
 
             if (sensorNode)
             {
+                DBG_Printf(DBG_INFO, "MyDebug 2\n");
                 sensorNode->rx();
                 sensorNode->incrementRxCounter();
                 ResourceItem *item = sensorNode->item(RConfigReachable);
@@ -3252,6 +3262,8 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
     }
 
     checkInstaModelId(sensor);
+    
+    DBG_Printf(DBG_INFO, "MyDebug 3\n");
 
     // DE Lighting Switch: probe for mode changes
     if (sensor->modelId() == QLatin1String("Lighting Switch") && ind.dstAddressMode() == deCONZ::ApsGroupAddress)
@@ -3369,6 +3381,7 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
         sensor->previousSequenceNumber = zclFrame.sequenceNumber();
         checkReporting = true;
     }
+    
     else if (sensor->modelId() == QLatin1String("Remote switch") || //legrand switch
              sensor->modelId() == QLatin1String("Double gangs remote switch") || //Legrand micro module
              sensor->modelId() == QLatin1String("Shutters central remote switch") || // legrand shutter switch
@@ -3383,6 +3396,13 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
              sensor->modelId().startsWith(QLatin1String("Z3-1BRL"))) // Lutron Aurora Friends-of-Hue dimmer switch
     {
         checkReporting = true;
+    }
+    else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || //Osram 4 buttons remote
+             sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini"))) // Osram mini switch
+    {
+        DBG_Printf(DBG_INFO, "MyDebug 4\n");
+        checkReporting = true;
+        checkClientCluster = true;
     }
     else if (sensor->modelId().startsWith(QLatin1String("ICZB-RM"))) // icasa remote
     {
@@ -3521,6 +3541,7 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
             buttonMap->zclCommandId == zclFrame.commandId())
         {
             ok = true;
+            DBG_Printf(DBG_INFO, "MyDebug 6\n");
 
             if (zclFrame.isProfileWideCommand() &&
                 zclFrame.commandId() == deCONZ::ZclReportAttributesId &&
