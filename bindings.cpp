@@ -1184,7 +1184,7 @@ bool DeRestPluginPrivate::sendConfigureReportingRequest(BindingTask &bt)
         {
             rq.attributeId = 0x0020;   // battery voltage
             rq.minInterval = 300;
-            rq.maxInterval = 60 * 45;
+            rq.maxInterval = 48000;
             rq.reportableChange8bit = 1;
         }
         else
