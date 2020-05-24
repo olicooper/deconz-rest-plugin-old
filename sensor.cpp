@@ -143,10 +143,10 @@ static const Sensor::ButtonMap ikeaRemoteMap[] = {
 static const Sensor::ButtonMap osramMiniRemoteMap[] = {
 //    mode                ep    cluster cmd   param button                                       name
     // Button up
-    { Sensor::ModeScenes, 0x01, 0x0006, 0x0A, 0,    S_BUTTON_2 + S_BUTTON_ACTION_SHORT_RELEASED, "Up" },
-    { Sensor::ModeScenes, 0x01, 0x0006, 0x0A, 1,    S_BUTTON_2 + S_BUTTON_ACTION_HOLD,           "Up long" },
-    { Sensor::ModeScenes, 0x01, 0x0006, 0x0A, 2,    S_BUTTON_2 + S_BUTTON_ACTION_LONG_RELEASED,  "Up release" },
-    // Button 0
+    { Sensor::ModeScenes, 0x01, 0x0006, 0x05, 0x00,    S_BUTTON_2 + S_BUTTON_ACTION_SHORT_RELEASED, "Up" },
+    { Sensor::ModeScenes, 0x01, 0x0008, 0x01, 0x00,    S_BUTTON_2 + S_BUTTON_ACTION_HOLD,           "Up long" },
+    { Sensor::ModeScenes, 0x01, 0x0008, 0x03, 0x00,    S_BUTTON_2 + S_BUTTON_ACTION_LONG_RELEASED,  "Up release" },
+    // Button 0 (center)
     { Sensor::ModeScenes, 0x02, 0x0006, 0x0A, 0,    S_BUTTON_1 + S_BUTTON_ACTION_SHORT_RELEASED, "0" },
     { Sensor::ModeScenes, 0x02, 0x0006, 0x0A, 1,    S_BUTTON_1 + S_BUTTON_ACTION_HOLD,           "0 long" },
     { Sensor::ModeScenes, 0x02, 0x0006, 0x0A, 2,    S_BUTTON_1 + S_BUTTON_ACTION_LONG_RELEASED,  "0 Release" },
@@ -160,11 +160,11 @@ static const Sensor::ButtonMap osramMiniRemoteMap[] = {
 
 static const Sensor::ButtonMap osram4ButRemoteMap[] = {
 //    mode                ep    cluster cmd   param button                                       name
-    // Button uper / left
+    // Button upper / left
     { Sensor::ModeScenes, 0x01, 0x0006, 0x01, 0x00,    S_BUTTON_1 + S_BUTTON_ACTION_HOLD,           "UL press short" },
     { Sensor::ModeScenes, 0x01, 0x0008, 0x05, 0x00,    S_BUTTON_1 + S_BUTTON_ACTION_SHORT_RELEASED, "UL long press" },
     { Sensor::ModeScenes, 0x01, 0x0008, 0x03, 0x00,    S_BUTTON_1 + S_BUTTON_ACTION_LONG_RELEASED,  "UL press release" },
-    // Button uper / right
+    // Button upper / right
     { Sensor::ModeScenes, 0x02, 0x0300, 0x4C, 0x01,    S_BUTTON_2 + S_BUTTON_ACTION_LONG_RELEASED,  "UR short press" },
     { Sensor::ModeScenes, 0x02, 0x0300, 0x03, 0xFE,    S_BUTTON_2 + S_BUTTON_ACTION_HOLD,           "UR press long" },
     { Sensor::ModeScenes, 0x02, 0x0300, 0x01, 0x01,    S_BUTTON_2 + S_BUTTON_ACTION_LONG_RELEASED,  "UR press Release" },

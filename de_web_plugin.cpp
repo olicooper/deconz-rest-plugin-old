@@ -754,7 +754,8 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
                     {
                         sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
                     }
-                    else if (sensorNode->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY"))) //Osram remote
+                    else if (sensorNode->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || // Osram 4 button remote
+                             sensorNode->modelId().startsWith(QLatin1String("Lightify Switch Mini")))    // Osram mini switch
                     {
                         sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
                     }
@@ -3397,8 +3398,8 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
     {
         checkReporting = true;
     }
-    else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || //Osram 4 buttons remote
-             sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini"))) // Osram mini switch
+    else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || // Osram 4 button remote
+             sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")))    // Osram mini switch
     {
         DBG_Printf(DBG_INFO, "MyDebug 4\n");
         checkReporting = true;
@@ -4060,7 +4061,8 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const deCONZ::
                     {
                         // ignore second endpoint
                     }
-                    else if (modelId == QLatin1String("Switch 4x EU-LIGHTIFY") && i->endpoint() != 0x01)
+                    else if ((modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || 
+                              modelId == QLatin1String("Lightify Switch Mini")) && i->endpoint() != 0x01)
                     {
                         // ignore all other endpoint
                     }
