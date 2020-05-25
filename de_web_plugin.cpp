@@ -758,6 +758,7 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
                              sensorNode->modelId().startsWith(QLatin1String("Lightify Switch Mini")))    // Osram mini switch
                     {
                         sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
+                        DBG_Printf(DBG_INFO, "MyDebug 0\n");
                     }
                     else
                     {
