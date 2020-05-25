@@ -732,6 +732,8 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
                 sensorNode = getSensorNodeForAddress(ind.srcAddress());
                 if (sensorNode)
                 {
+                    DBG_Printf(DBG_INFO, "MyDebug 0.2 modelId: %s\n", qPrintable(sensorNode->modelId()));
+                    
                     if (zclFrame.manufacturerCode() == VENDOR_PHILIPS)
                     {
                         // Hue dimmer switch
@@ -759,7 +761,7 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
                              sensorNode->modelId() == QLatin1String("Lightify Switch Mini"))    // Osram mini switch
                     {
                         sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
-                        DBG_Printf(DBG_INFO, "MyDebug 0.2\n");
+                        DBG_Printf(DBG_INFO, "MyDebug 0.3\n");
                     }
                     else
                     {
