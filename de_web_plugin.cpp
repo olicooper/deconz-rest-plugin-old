@@ -727,6 +727,7 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
 
             if (!sensorNode)
             {
+                DBG_Printf(DBG_INFO, "MyDebug 0.1\n");
                 // No sensorNode found for endpoint - check for multiple endpoints mapped to the same resource
                 sensorNode = getSensorNodeForAddress(ind.srcAddress());
                 if (sensorNode)
@@ -755,10 +756,10 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
                         sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
                     }
                     else if (sensorNode->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || // Osram 4 button remote
-                             sensorNode->modelId().startsWith(QLatin1String("Lightify Switch Mini")))    // Osram mini switch
+                             sensorNode->modelId() == QLatin1String("Lightify Switch Mini"))    // Osram mini switch
                     {
                         sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
-                        DBG_Printf(DBG_INFO, "MyDebug 0\n");
+                        DBG_Printf(DBG_INFO, "MyDebug 0.2\n");
                     }
                     else
                     {

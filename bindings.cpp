@@ -2417,6 +2417,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
     //quint8 srcEndpoint = sensor->fingerPrint().endpoint;
     std::vector<quint16> clusters;
 
+    DBG_Printf(DBG_INFO, "MyDebug Bind 0 mid:%s\n", sensor->modelId());
     if (sensor->modelId().startsWith(QLatin1String("RWL02")) || // Hue dimmer switch
         sensor->modelId().startsWith(QLatin1String("ROM00"))) // Hue smart button
 
@@ -2503,6 +2504,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
     // OSRAM mini switch
     else if (sensor->modelId() == QLatin1String("Lightify Switch Mini") )
     {
+        DBG_Printf(DBG_INFO, "MyDebug Bind 1\n");
         clusters.push_back(ONOFF_CLUSTER_ID);
         clusters.push_back(LEVEL_CLUSTER_ID);
         clusters.push_back(COLOR_CLUSTER_ID);
