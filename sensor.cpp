@@ -1312,7 +1312,7 @@ const Sensor::ButtonMap *Sensor::buttonMap()
         }
         else if (manufacturer.startsWith(QLatin1String("OSRAM")))
         {
-            DBG_Printf(DBG_INFO, "MyDebug Sensor 0 mid:%s\n", modelId);
+            DBG_Printf(DBG_INFO, "MyDebug Sensor 0 modelId: %s\n", modelId->toString());
             // if      (modelid == QLatin1String("Lightify Switch Mini")) { m_buttonMap = osramMiniRemoteMap; }
             if      (modelid == QLatin1String("Switch 4x EU-LIGHTIFY")) { m_buttonMap = osram4ButRemoteMap; }
         }
