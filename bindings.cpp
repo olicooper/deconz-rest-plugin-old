@@ -1184,8 +1184,8 @@ bool DeRestPluginPrivate::sendConfigureReportingRequest(BindingTask &bt)
         else if (sensor && (sensor->modelId() == QLatin1String("Lightify Switch Mini")))
         {
             rq.attributeId = 0x0020;   // battery voltage
-            rq.minInterval = 43200;
-            rq.maxInterval = 43200;
+            rq.minInterval = 900;
+            rq.maxInterval = 3600;
             rq.reportableChange8bit = 0;
         }
         else
