@@ -3549,7 +3549,7 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
         }
     }
 
-    DBG_Printf(DBG_INFO, "MyDebug 5.3 mode: %d ep: 0x%02X cluster: 0x%04X cmd: 0x%02X\n", sensor->mode(), ind.srcEndpoint(), ind.clusterId(), zclFrame.commandId());
+    DBG_Printf(DBG_INFO, "MyDebug 5.3 mode: %d ep: 0x%02X cluster: 0x%04X cmd: 0x%02X sPrevD: 0x%02X\n", sensor->mode(), ind.srcEndpoint(), ind.clusterId(), zclFrame.commandId(), sensor->previousDirection);
 
     bool ok = false;
     while (buttonMap->mode != Sensor::ModeNone && !ok)
@@ -3714,17 +3714,9 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
                        (zclFrame.commandId() == 0x03 ||  // stop
                         zclFrame.commandId() == 0x07) )  // stop (with on/off)
             {
-                DBG_Printf(DBG_INFO, "MyDebug 6.1\n");
                 ok = false;
                 if (buttonMap->zclParam0 == sensor->previousDirection) // direction of previous move/step
                 {
-                    DBG_Printf(DBG_INFO, "MyDebug 6.2a\n");
-                    sensor->previousDirection = 0xFF;
-                    ok = true;
-                }
-                else if (zclFrame.payload().size() == 0 && sensor->modelId() == QLatin1String("Lightify Switch Mini"))
-                {
-                    DBG_Printf(DBG_INFO, "MyDebug 6.2b\n");
                     sensor->previousDirection = 0xFF;
                     ok = true;
                 }
