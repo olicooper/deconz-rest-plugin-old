@@ -3255,6 +3255,9 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
         return;
     }
 
+    DBG_Printf(DBG_INFO, "MyDebug ZCL attribute report 0x%016llX for cluster: 0x%04X, ep: 0x%02X, frame control: 0x%02X, mfcode: 0x%04X \n", ind.srcAddress().ext(), ind.clusterId(), ind.srcEndpoint(), zclFrame.frameControl(), zclFrame.manufacturerCode());
+    DBG_Printf(DBG_INFO, "\tMyDebug payload: %s\n", qPrintable(zclFrame.payload().toHex()));
+
     bool checkReporting = false;
     bool checkClientCluster = false;
     const Sensor::ButtonMap *buttonMap = sensor->buttonMap();
@@ -3263,6 +3266,13 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
         quint8 pl0 = zclFrame.payload().isEmpty() ? 0 : zclFrame.payload().at(0);
         DBG_Printf(DBG_INFO, "no button map for: %s ep: 0x%02X cl: 0x%04X cmd: 0x%02X pl[0]: 0%02X\n",
                    qPrintable(sensor->modelId()), ind.srcEndpoint(), ind.clusterId(), zclFrame.commandId(), pl0);
+        
+        // for (int i = 0; i < zclFrame.payload().size(); i++)
+        // {
+        //     quint8 pl0 = zclFrame.payload().isEmpty() ? 0 : zclFrame.payload().at(i);
+        //     DBG_Printf(DBG_INFO, "pl[%d]: 0%02X\n", i, pl0);
+        // }
+
         return;
     }
 
@@ -3439,6 +3449,7 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
 
     if (ind.dstAddressMode() == deCONZ::ApsGroupAddress && ind.dstAddress().group() != 0)
     {
+        DBG_Printf(DBG_INFO, "MyDebug 5.1\n");
         QStringList gids;
         ResourceItem *item = sensor->addItem(DataTypeString, RConfigGroup);
 
@@ -3524,6 +3535,7 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
         }
         else
         {
+        DBG_Printf(DBG_INFO, "MyDebug 5.2\n");
             if (!gids.contains(gid))
             {
                 item->setValue(gid);
@@ -3536,6 +3548,8 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
             enqueueEvent(e);
         }
     }
+
+    DBG_Printf(DBG_INFO, "MyDebug 5.3 mode: %d ep: 0x%02X cluster: 0x%04X cmd: 0x%02X\n", sensor->mode(), ind.srcEndpoint(), ind.clusterId(), zclFrame.commandId());
 
     bool ok = false;
     while (buttonMap->mode != Sensor::ModeNone && !ok)
