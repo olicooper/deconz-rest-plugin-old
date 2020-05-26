@@ -3714,9 +3714,17 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
                        (zclFrame.commandId() == 0x03 ||  // stop
                         zclFrame.commandId() == 0x07) )  // stop (with on/off)
             {
+                DBG_Printf(DBG_INFO, "MyDebug 6.1\n");
                 ok = false;
                 if (buttonMap->zclParam0 == sensor->previousDirection) // direction of previous move/step
                 {
+                    DBG_Printf(DBG_INFO, "MyDebug 6.2a\n");
+                    sensor->previousDirection = 0xFF;
+                    ok = true;
+                }
+                else if (zclFrame.payload().size() == 0 && sensor->modelId() == QLatin1String("Lightify Switch Mini"))
+                {
+                    DBG_Printf(DBG_INFO, "MyDebug 6.2b\n");
                     sensor->previousDirection = 0xFF;
                     ok = true;
                 }
