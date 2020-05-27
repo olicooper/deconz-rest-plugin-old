@@ -1181,13 +1181,13 @@ bool DeRestPluginPrivate::sendConfigureReportingRequest(BindingTask &bt)
             rq.maxInterval = 43200;    // according to technical manual
             rq.reportableChange8bit = 0;
         }
-        else if (sensor && (sensor->modelId() == QLatin1String("Lightify Switch Mini")))
-        {
-            rq.attributeId = 0x0020;   // battery voltage
-            rq.minInterval = 900;
-            rq.maxInterval = 3600;
-            rq.reportableChange8bit = 0;
-        }
+        // else if (sensor && (sensor->modelId() == QLatin1String("Lightify Switch Mini")))
+        // {
+        //     rq.attributeId = 0x0020;   // battery voltage
+        //     rq.minInterval = 900;
+        //     rq.maxInterval = 3600;
+        //     rq.reportableChange8bit = 0;
+        // }
         else
         {
             rq.minInterval = 300;
@@ -2179,7 +2179,8 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
                      sensor->modelId().startsWith(QLatin1String("3326-L")) ||
                      sensor->modelId().startsWith(QLatin1String("3305-S")) ||
                      sensor->modelId() == QLatin1String("113D") ||
-                     sensor->modelId() == QLatin1String("Lightify Switch Mini"))
+                    //  sensor->modelId() == QLatin1String("Lightify Switch Mini")
+                    )
             {
                 val = sensor->getZclValue(*i, 0x0020); // battery voltage
             }
