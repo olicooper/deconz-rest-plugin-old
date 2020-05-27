@@ -2178,9 +2178,8 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
                      sensor->modelId().startsWith(QLatin1String("3323")) ||
                      sensor->modelId().startsWith(QLatin1String("3326-L")) ||
                      sensor->modelId().startsWith(QLatin1String("3305-S")) ||
-                     sensor->modelId() == QLatin1String("113D") ||
-                    //  sensor->modelId() == QLatin1String("Lightify Switch Mini")
-                    )
+                     sensor->modelId() == QLatin1String("113D")/* ||
+                     sensor->modelId() == QLatin1String("Lightify Switch Mini") */)
             {
                 val = sensor->getZclValue(*i, 0x0020); // battery voltage
             }
