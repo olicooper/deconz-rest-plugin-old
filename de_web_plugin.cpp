@@ -3805,7 +3805,8 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
                      (zclFrame.commandId() == 0x01 ) )  // Move hue command
             {
                 //just used by !osram device ATM
-                if (sensor->modelId()== QLatin1String("Switch 4x EU-LIGHTIFY"))
+                if (sensor->modelId()== QLatin1String("Switch 4x EU-LIGHTIFY") ||
+                    sensor->modelId()== QLatin1String("Lightify Switch Mini") )
                 {
                     quint8 pl0 = zclFrame.payload().isEmpty() ? 0 : zclFrame.payload().at(0);
                     if ( buttonMap->zclParam0 != pl0)
