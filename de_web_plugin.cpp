@@ -208,7 +208,7 @@ static const SupportedDevice supportedDevices[] = {
     { VENDOR_UBISYS, "S2", ubisysMacPrefix },
     { VENDOR_NONE, "Z716A", netvoxMacPrefix },
     // { VENDOR_OSRAM_STACK, "Plug", osramMacPrefix }, // OSRAM plug - exposed only as light
-    { VENDOR_OSRAM, "Lightify Switch Mini", emberMacPrefix }, // Osram mini remote
+    { VENDOR_OSRAM, "Lightify Switch Mini", emberMacPrefix }, // Osram 3 button remote
     { VENDOR_OSRAM, "Switch 4x EU-LIGHTIFY", emberMacPrefix }, // Osram 4 button remote
     { VENDOR_OSRAM_STACK, "CO_", heimanMacPrefix }, // Heiman CO sensor
     { VENDOR_OSRAM_STACK, "DOOR_", heimanMacPrefix }, // Heiman door/window sensor - older model
@@ -762,8 +762,8 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
                     {
                         sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
                     }
-                    else if (sensorNode->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || // Osram 4 button remote
-                             sensorNode->modelId() == QLatin1String("Lightify Switch Mini"))    // Osram mini switch
+                    else if (sensorNode->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || // Osram 4 button
+                             sensorNode->modelId().startsWith(QLatin1String("Lightify Switch Mini")) ) // Osram 3 button
                     {
                         sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
                         DBG_Printf(DBG_INFO, "MyDebug 0.3\n");
@@ -3418,7 +3418,7 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
         checkReporting = true;
     }
     else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || // Osram 4 button remote
-             sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")))    // Osram mini switch
+             sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")))    // Osram 3 button remote
     {
         DBG_Printf(DBG_INFO, "MyDebug 4\n");
         checkReporting = true;
@@ -3801,7 +3801,21 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
                 }
 
             }
-
+            else if (ind.clusterId() == COLOR_CLUSTER_ID &&
+                     (zclFrame.commandId() == 0x01 ) )  // Move hue command
+            {
+                //just used by !osram device ATM
+                if (sensor->modelId()== QLatin1String("Switch 4x EU-LIGHTIFY"))
+                {
+                    quint8 pl0 = zclFrame.payload().isEmpty() ? 0 : zclFrame.payload().at(0);
+                    if ( buttonMap->zclParam0 != pl0)
+                    {
+                        ok = false;
+                    }
+                }
+                
+            }
+ 
             if (ok && buttonMap->button != 0)
             {
                 DBG_Printf(DBG_INFO, "button %u %s\n", buttonMap->button, buttonMap->name);
@@ -4097,8 +4111,8 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const deCONZ::
                     {
                         // ignore second endpoint
                     }
-                    else if ((modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || 
-                              modelId == QLatin1String("Lightify Switch Mini")) && i->endpoint() != 0x01)
+                    else if ( (modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || (modelId == QLatin1String("Lightify Switch Mini")) )
+                            && (i->endpoint() != 0x01) )
                     {
                         // ignore all other endpoint
                     }
