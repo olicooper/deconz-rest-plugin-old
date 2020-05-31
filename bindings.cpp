@@ -2664,7 +2664,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
     {
         return false;
     }
-    DBG_Printf(DBG_INFO, "MyDebug 13\n");
+    DBG_Printf(DBG_INFO, "MyDebug 13 srcEndpointSize: %d, gidSize:%d\n", (int)srcEndpoints.size(), (int)gids.size());
     bool ret = false;
     for (int j = 0; j < (int)srcEndpoints.size() && j < gids.size(); j++)
     {
@@ -2672,7 +2672,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         quint8 srcEndpoint = srcEndpoints[j];
         Group *group = getGroupForId(gid);
         
-        DBG_Printf(DBG_INFO, "MyDebug 14\n");
+        DBG_Printf(DBG_INFO, "MyDebug 14 gid:0x%02X%\n", qPrintable(gid));
 
         if (!group)
         {
