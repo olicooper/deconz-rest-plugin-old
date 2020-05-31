@@ -2786,8 +2786,8 @@ void DeRestPluginPrivate::checkSensorGroup(Sensor *sensor)
     {
         //Make group but without uniqueid
     }
-    else if (sensorNode->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || //Osram 4 button
-             sensorNode->modelId().startsWith(QLatin1String("Lightify Switch Mini")) ) //Osram mini switch
+    else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || //Osram 4 button
+             sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) ) //Osram mini switch
     {
 
         // check if group is created for other endpoint
