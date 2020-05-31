@@ -2426,15 +2426,14 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         return false;
     }
     
-    DBG_Printf(DBG_INFO, "MyDebug 12\n");
+    DBG_Printf(DBG_INFO, "MyDebug 12 => mid: %s\n", qPrintable(sensor->modelId()));
 
     std::vector<quint8> srcEndpoints;
     QStringList gids = item->toString().split(',', QString::SkipEmptyParts);
 
     //quint8 srcEndpoint = sensor->fingerPrint().endpoint;
     std::vector<quint16> clusters;
-
-    DBG_Printf(DBG_INFO, "MyDebug Bind 0 mid:%s\n", sensor->modelId());
+    
     if (sensor->modelId().startsWith(QLatin1String("RWL02")) || // Hue dimmer switch
         sensor->modelId().startsWith(QLatin1String("ROM00"))) // Hue smart button
 
