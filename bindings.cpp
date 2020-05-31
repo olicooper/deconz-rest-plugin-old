@@ -2527,6 +2527,12 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         srcEndpoints.push_back(0x01);
         srcEndpoints.push_back(0x02);
         srcEndpoints.push_back(0x03);
+        
+        //hack to use all endpoint on same group
+        QString gid0 = gids[0];
+        gids.append(gid0);
+        gids.append(gid0);
+
     }
     // OSRAM 4 button mini switch
     else if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") )
@@ -2672,7 +2678,6 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         {
             continue;
         }
-        DBG_Printf(DBG_INFO, "MyDebug 15\n");
 
         std::vector<quint16>::const_iterator i = clusters.begin();
         std::vector<quint16>::const_iterator end = clusters.end();
