@@ -4508,7 +4508,7 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const deCONZ::
                     else if ( (modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || (modelId == QLatin1String("Lightify Switch Mini")) )
                             /*&& (i->endpoint() >= 0x01 && i->endpoint() <= 0x04) */ )
                     {
-                        DBG_Printf(DBG_INFO, "MyDebug 20 addSensorNode cluster: 0x%02X ep: 0x%02X\n", ci->id(), i->endpoint());
+                        DBG_Printf(DBG_INFO, "MyDebug 20 addSensorNode cluster: 0x%04X ep: 0x%02X\n", ci->id(), i->endpoint());
                         fpSwitch.outClusters.push_back(ci->id());
                     }
                     else if (node->nodeDescriptor().manufacturerCode() == VENDOR_UBISYS)
