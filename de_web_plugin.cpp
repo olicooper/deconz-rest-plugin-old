@@ -13366,6 +13366,7 @@ void DeRestPluginPrivate::handleDeviceAnnceIndication(const deCONZ::ApsDataIndic
             si->rx();
             found++;
             DBG_Printf(DBG_INFO, "DeviceAnnce of SensorNode: 0x%016llX [1]\n", si->address().ext());
+            DBG_Printf(DBG_INFO, "Mydebug 22: 0x%02X\n", si->fingerPrint().endpoint);
 
             ResourceItem *item = si->item(RConfigReachable);
             if (item)
@@ -13436,7 +13437,7 @@ void DeRestPluginPrivate::handleDeviceAnnceIndication(const deCONZ::ApsDataIndic
         deCONZ::ZclFrame zclFrame; // dummy
         handleIndicationSearchSensors(ind, zclFrame);
     }
-    DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce 3 sSenSt:%d, apsCtrl:%d\n", searchSensorsState == SearchSensorsActive, apsCtrl);
+    DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce 3 sSenSt:%d, apsCtrl:%d\n", searchSensorsState == SearchSensorsActive, apsCtrl != 0);
 }
 
 /*! Handle node descriptor response.
