@@ -626,6 +626,7 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
     {
         return;
     }
+    DBG_Printf(DBG_INFO, "MyDebug apsdeDataIndication profileId:0x%04X, cid:0x%04X\n", ind.profileId(), ind.clusterId());
 
     if ((ind.profileId() == HA_PROFILE_ID) || (ind.profileId() == ZLL_PROFILE_ID))
     {
@@ -13239,7 +13240,7 @@ void DeRestPluginPrivate::handleDeviceAnnceIndication(const deCONZ::ApsDataIndic
         stream >> ext;
         stream >> macCapabilities;
     }
-
+    DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce nodesSize: %u, nwk: 0x%04X\n", (uint)nodes.size(), nwk);
     for (; i != end; ++i)
     {
         if (i->state() != LightNode::StateNormal)
@@ -13351,10 +13352,12 @@ void DeRestPluginPrivate::handleDeviceAnnceIndication(const deCONZ::ApsDataIndic
     std::vector<Sensor>::iterator si = sensors.begin();
     std::vector<Sensor>::iterator send = sensors.end();
 
+    DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce 1\n");
     for (; si != send; ++si)
     {
         if (si->deletedState() != Sensor::StateNormal)
         {
+            DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce 1.1\n");
             continue;
         }
 
@@ -13406,6 +13409,8 @@ void DeRestPluginPrivate::handleDeviceAnnceIndication(const deCONZ::ApsDataIndic
             }
         }
     }
+    
+    DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce 2 foundCount:%d\n", found);
 
     if (searchSensorsState == SearchSensorsActive)
     {
@@ -13425,11 +13430,13 @@ void DeRestPluginPrivate::handleDeviceAnnceIndication(const deCONZ::ApsDataIndic
                 }
                 i++;
             }
+            DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce 2.1 nodeCount:%d\n", i);
         }
 
         deCONZ::ZclFrame zclFrame; // dummy
         handleIndicationSearchSensors(ind, zclFrame);
     }
+    DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce 3 sSenSt:%d, apsCtrl:%d\n", searchSensorsState == SearchSensorsActive, apsCtrl);
 }
 
 /*! Handle node descriptor response.
