@@ -1181,13 +1181,6 @@ bool DeRestPluginPrivate::sendConfigureReportingRequest(BindingTask &bt)
             rq.maxInterval = 43200;    // according to technical manual
             rq.reportableChange8bit = 0;
         }
-        // else if (sensor && (sensor->modelId() == QLatin1String("Lightify Switch Mini")))
-        // {
-        //     rq.attributeId = 0x0020;   // battery voltage
-        //     rq.minInterval = 900;
-        //     rq.maxInterval = 3600;
-        //     rq.reportableChange8bit = 0;
-        // }
         else
         {
             rq.minInterval = 300;
@@ -2103,8 +2096,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
     }
     
     //Make bind only for endpoint 01
-    if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") ||
-    sensor->modelId() == QLatin1String("Lightify Switch Mini"))
+    if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") || sensor->modelId() == QLatin1String("Lightify Switch Mini"))
     {
         if (sensor->fingerPrint().endpoint != 0x01)
         {
@@ -2185,7 +2177,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
                      sensor->modelId() == QLatin1String("FLSZB-110") ||
                      sensor->modelId() == QLatin1String("Zen-01") ||
                      sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") ||
-                     sensor->modelId() == QLatin1String("Lightify Switch Mini") ||
+                     sensor->modelId() == QLatin1String("Lightify Switch Mini") || // Osram 3 button remote
                      sensor->modelId().startsWith(QLatin1String("ZHMS101")) ||
                      sensor->modelId().endsWith(QLatin1String("86opcn01")) || // Aqara Opple
                      sensor->modelId().startsWith(QLatin1String("1116-S")) ||
@@ -2193,8 +2185,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
                      sensor->modelId().startsWith(QLatin1String("3323")) ||
                      sensor->modelId().startsWith(QLatin1String("3326-L")) ||
                      sensor->modelId().startsWith(QLatin1String("3305-S")) ||
-                     sensor->modelId() == QLatin1String("113D") ||
-                     sensor->modelId() == QLatin1String("Lightify Switch Mini") // Osram 3 button remote
+                     sensor->modelId() == QLatin1String("113D")
                 )
             {
                 val = sensor->getZclValue(*i, 0x0020); // battery voltage
@@ -2535,7 +2526,6 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         clusters.push_back(COLOR_CLUSTER_ID);
         
         srcEndpoints.push_back(sensor->fingerPrint().endpoint);
-
     }
     // OSRAM 4 button mini switch
     else if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") )
