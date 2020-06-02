@@ -13366,7 +13366,8 @@ void DeRestPluginPrivate::handleDeviceAnnceIndication(const deCONZ::ApsDataIndic
             si->rx();
             found++;
             DBG_Printf(DBG_INFO, "DeviceAnnce of SensorNode: 0x%016llX [1]\n", si->address().ext());
-            DBG_Printf(DBG_INFO, "Mydebug 22: 0x%02X\n", si->fingerPrint().endpoint);
+            //Disable or not ?
+            //DBG_Printf(DBG_INFO, "Device Endpoint: 0x%02X\n", si->fingerPrint().endpoint);
 
             ResourceItem *item = si->item(RConfigReachable);
             if (item)
