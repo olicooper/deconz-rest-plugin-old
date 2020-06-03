@@ -4505,15 +4505,6 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const deCONZ::
                     {
                         fpPresenceSensor.outClusters.push_back(ci->id());
                     }
-                    else if ( modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || modelId == QLatin1String("Lightify Switch Mini") )
-                    {
-                        fpSwitch.outClusters.push_back(ci->id());
-                        DBG_Printf(DBG_INFO, "MyDebug 20 addSensorNode cluster: 0x%04X ep: 0x%02X\n", ci->id(), i->endpoint());
-                        if (i->endpoint() == 0x01) // create sensor only for first endpoint
-                        {
-                            fpSwitch.outClusters.push_back(ci->id());
-                        }
-                    }
                     else if (node->nodeDescriptor().manufacturerCode() == VENDOR_UBISYS)
                     {
                         if ((modelId.startsWith(QLatin1String("D1")) && i->endpoint() == 0x02) ||
@@ -4568,6 +4559,14 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const deCONZ::
         if (!isDeviceSupported(node, modelId))
         {
             continue;
+        }
+        
+        if ( modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || modelId == QLatin1String("Lightify Switch Mini") )
+        {
+            if (i->endpoint() != 0x01) // create sensor only for first endpoint
+            {
+                fpSwitch.clear();
+            }
         }
 
         Sensor *sensor = nullptr;
