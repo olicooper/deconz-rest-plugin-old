@@ -3421,7 +3421,6 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
     else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || // Osram 4 button remote
              sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")))    // Osram 3 button remote
     {
-        DBG_Printf(DBG_INFO, "MyDebug 4\n");
         checkReporting = true;
         checkClientCluster = true;
     }
@@ -4506,11 +4505,14 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const deCONZ::
                     {
                         fpPresenceSensor.outClusters.push_back(ci->id());
                     }
-                    else if ( (modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || (modelId == QLatin1String("Lightify Switch Mini")) )
-                            && (i->endpoint() == 0x01) )
+                    else if ( modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || modelId == QLatin1String("Lightify Switch Mini") )
                     {
-                        DBG_Printf(DBG_INFO, "MyDebug 20 addSensorNode cluster: 0x%04X ep: 0x%02X\n", ci->id(), i->endpoint());
                         fpSwitch.outClusters.push_back(ci->id());
+                        DBG_Printf(DBG_INFO, "MyDebug 20 addSensorNode cluster: 0x%04X ep: 0x%02X\n", ci->id(), i->endpoint());
+                        if (i->endpoint() == 0x01) // create sensor only for first endpoint
+                        {
+                            fpSwitch.outClusters.push_back(ci->id());
+                        }
                     }
                     else if (node->nodeDescriptor().manufacturerCode() == VENDOR_UBISYS)
                     {

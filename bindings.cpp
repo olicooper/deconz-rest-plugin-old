@@ -2096,7 +2096,8 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
     }
     
     //Make bind only for endpoint 01
-    if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") || sensor->modelId() == QLatin1String("Lightify Switch Mini"))
+    if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") ||
+        sensor->modelId() == QLatin1String("Lightify Switch Mini"))
     {
         if (sensor->fingerPrint().endpoint != 0x01)
         {
