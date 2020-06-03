@@ -4563,6 +4563,7 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const deCONZ::
         
         if ( modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || modelId == QLatin1String("Lightify Switch Mini") )
         {
+            DBG_Printf(DBG_INFO, "MyDebug 20 addSensorNode ep: 0x%02X\n", i->endpoint());
             if (i->endpoint() != 0x01) // create sensor only for first endpoint
             {
                 fpSwitch.clear();
