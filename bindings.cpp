@@ -2527,8 +2527,16 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         clusters.push_back(ONOFF_CLUSTER_ID);
         clusters.push_back(LEVEL_CLUSTER_ID);
         clusters.push_back(COLOR_CLUSTER_ID);
-        
-        srcEndpoints.push_back(sensor->fingerPrint().endpoint);
+
+        // The new code binds all ep on same group, so trick in to thinking it 
+        // has 3 groups still so all ep's are bound properly.
+        QString gid0 = gids[0];
+        gids.append(gid0);
+        gids.append(gid0);
+
+        srcEndpoints.push_back(0x01);
+        srcEndpoints.push_back(0x02);
+        srcEndpoints.push_back(0x03);
     }
     // OSRAM 4 button mini switch
     else if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") )
