@@ -2098,14 +2098,14 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
     }
     
     //Make bind only for endpoint 01
-    if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") ||
-        sensor->modelId() == QLatin1String("Lightify Switch Mini"))
-    {
-        if (sensor->fingerPrint().endpoint != 0x01)
-        {
-            return false;
-        }
-    }
+    // if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") ||
+    //     sensor->modelId() == QLatin1String("Lightify Switch Mini"))
+    // {
+    //     if (sensor->fingerPrint().endpoint != 0x01)
+    //     {
+    //         return false;
+    //     }
+    // }
 
     bool ret = false;
     bool checkBindingTable = false;
@@ -2528,7 +2528,9 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         clusters.push_back(LEVEL_CLUSTER_ID);
         clusters.push_back(COLOR_CLUSTER_ID);
         
-        srcEndpoints.push_back(sensor->fingerPrint().endpoint);
+        srcEndpoints.push_back(0x01);
+        srcEndpoints.push_back(0x02);
+        srcEndpoints.push_back(0x03);
     }
     // OSRAM 4 button mini switch
     else if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") )
@@ -2787,7 +2789,7 @@ void DeRestPluginPrivate::checkSensorGroup(Sensor *sensor)
              sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) ) //Osram mini switch
     {
 
-        // check if group is created for other endpoint feom 0x01 to 0x03 (From my memory you have only 3 endpoints)
+        // check if group is created for other endpoint from 0x01 to 0x03 (From my memory you have only 3 endpoints)
         for (quint8 ep = 0x01; !group && ep <= 0x03; ep++)
         {
             //get a sensor according the mac adress and the ep value
