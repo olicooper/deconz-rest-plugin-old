@@ -2098,14 +2098,14 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
     }
     
     //Make bind only for endpoint 01
-    // if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") ||
-    //     sensor->modelId() == QLatin1String("Lightify Switch Mini"))
-    // {
-    //     if (sensor->fingerPrint().endpoint != 0x01)
-    //     {
-    //         return false;
-    //     }
-    // }
+    if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") ||
+        sensor->modelId() == QLatin1String("Lightify Switch Mini"))
+    {
+        if (sensor->fingerPrint().endpoint != 0x01)
+        {
+            return false;
+        }
+    }
 
     bool ret = false;
     bool checkBindingTable = false;
@@ -2528,9 +2528,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         clusters.push_back(LEVEL_CLUSTER_ID);
         clusters.push_back(COLOR_CLUSTER_ID);
         
-        srcEndpoints.push_back(0x01);
-        srcEndpoints.push_back(0x02);
-        srcEndpoints.push_back(0x03);
+        srcEndpoints.push_back(sensor->fingerPrint().endpoint);
     }
     // OSRAM 4 button mini switch
     else if (sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") )

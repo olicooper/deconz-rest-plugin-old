@@ -4504,6 +4504,11 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const deCONZ::
                     {
                         fpPresenceSensor.outClusters.push_back(ci->id());
                     }
+                    else if ( modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || modelId == QLatin1String("Lightify Switch Mini") )
+                    {
+                        // Only create entry for endpoint 0x01
+                        fpSwitch.outClusters.push_back(ci->id());
+                    }
                     else if (node->nodeDescriptor().manufacturerCode() == VENDOR_UBISYS)
                     {
                         if ((modelId.startsWith(QLatin1String("D1")) && i->endpoint() == 0x02) ||
