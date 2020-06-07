@@ -2530,9 +2530,9 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
 
         // The new code binds all ep on same group, so trick in to thinking it 
         // has 3 groups still so all ep's are bound properly.
-        QString gid0 = gids[0];
-        gids.append(gid0);
-        gids.append(gid0);
+        // QString gid0 = gids[0];
+        // gids.append(gid0);
+        // gids.append(gid0);
 
         srcEndpoints.push_back(0x01);
         srcEndpoints.push_back(0x02);
