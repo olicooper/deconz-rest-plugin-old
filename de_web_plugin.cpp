@@ -5666,6 +5666,7 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const SensorFi
                 if (sensorNode.modelId() == QLatin1String("Remote switch") || 
                     sensorNode.modelId() == QLatin1String("Shutters central remote switch") || 
                     sensorNode.modelId() == QLatin1String("Double gangs remote switch") ||
+                    sensorNode.modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") ||
                     sensorNode.modelId() == QLatin1String("Lightify Switch Mini") )
                 {
                     DBG_Printf(DBG_INFO, "MyDebug 40 SensorNode %u / %s\n", sensorNode.id().toUInt(), qPrintable(sensorNode.name()));
