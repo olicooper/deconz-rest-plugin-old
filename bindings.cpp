@@ -2530,9 +2530,9 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
 
         // The new code binds all ep on same group, so trick in to thinking it 
         // has 3 groups still so all ep's are bound properly.
-        // QString gid0 = gids[0];
-        // gids.append(gid0);
-        // gids.append(gid0);
+        QString gid0 = gids[0];
+        gids.append(gid0);
+        gids.append(gid0);
 
         srcEndpoints.push_back(0x01);
         srcEndpoints.push_back(0x02);
@@ -2544,8 +2544,16 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         clusters.push_back(ONOFF_CLUSTER_ID);
         clusters.push_back(LEVEL_CLUSTER_ID);
         clusters.push_back(COLOR_CLUSTER_ID);
-        
-        srcEndpoints.push_back(sensor->fingerPrint().endpoint);
+
+        QString gid0 = gids[0];
+        gids.append(gid0);
+        gids.append(gid0);
+        gids.append(gid0);
+
+        srcEndpoints.push_back(0x01);
+        srcEndpoints.push_back(0x02);
+        srcEndpoints.push_back(0x03);
+        srcEndpoints.push_back(0x04);
     }
     // LEGRAND Remote switch, simple and double
     else if (sensor->modelId() == QLatin1String("Remote switch") ||
@@ -2794,9 +2802,13 @@ void DeRestPluginPrivate::checkSensorGroup(Sensor *sensor)
     else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || //Osram 4 button
              sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) ) //Osram mini switch
     {
-
-        // check if group is created for other endpoint from 0x01 to 0x03 (From my memory you have only 3 endpoints)
-        for (quint8 ep = 0x01; !group && ep <= 0x03; ep++)
+        quint8 maxEp = 0x03;
+        if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY"))
+        {
+            maxEp = 0x04;
+        }
+        // check if group is created for other endpoint
+        for (quint8 ep = 0x01; !group && ep <= maxEp; ep++)
         {
             //get a sensor according the mac adress and the ep value
             Sensor *s = getSensorNodeForAddressAndEndpoint(sensor->address(), ep);
