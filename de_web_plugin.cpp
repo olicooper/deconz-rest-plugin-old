@@ -5663,8 +5663,12 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const SensorFi
             else if (*ci == POWER_CONFIGURATION_CLUSTER_ID)
             {
                 //This device make a Rejoin every time, you trigger it, it's the only moment where you can read attribute.
-                if (sensorNode.modelId() == QLatin1String("Remote switch") || sensorNode.modelId() == QLatin1String("Shutters central remote switch") || sensorNode.modelId() == QLatin1String("Double gangs remote switch") )
+                if (sensorNode.modelId() == QLatin1String("Remote switch") || 
+                    sensorNode.modelId() == QLatin1String("Shutters central remote switch") || 
+                    sensorNode.modelId() == QLatin1String("Double gangs remote switch") ||
+                    sensorNode.modelId() == QLatin1String("Lightify Switch Mini")) )
                 {
+                    DBG_Printf(DBG_INFO, "MyDebug 40 SensorNode %u / %s\n", sensorNode.id().toUInt(), qPrintable(sensorNode.name()));
                     //Ask for battery but only every day max
                     //int diff = idleTotalCounter - sensorNode.lastRead(READ_BATTERY);
                     //if (diff > 24 * 3600)
