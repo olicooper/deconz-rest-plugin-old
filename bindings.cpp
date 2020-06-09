@@ -2803,7 +2803,7 @@ void DeRestPluginPrivate::checkSensorGroup(Sensor *sensor)
              sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) ) //Osram mini switch
     {
         quint8 maxEp = 0x03;
-        if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY"))
+        if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")))
         {
             maxEp = 0x04;
         }
