@@ -1141,7 +1141,7 @@ public Q_SLOTS:
     bool checkSensorBindingsForClientClusters(Sensor *sensor);
     void checkSensorGroup(Sensor *sensor);
     void checkOldSensorGroups(Sensor *sensor);
-    bool DeRestPluginPrivate::MakeBind(Sensor *sensor, quint8 srcEndpoint , quint16 srcCluster, QString gid);
+    bool makeBind(Sensor *sensor, quint8 srcEndpoint , quint16 srcCluster, QString gid);
     void deleteGroupsWithDeviceMembership(const QString &id);
     void processUbisysBinding(Sensor *sensor, const Binding &bnd);
     void processUbisysC4Configuration(Sensor *sensor);

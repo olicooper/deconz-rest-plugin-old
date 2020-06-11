@@ -2756,7 +2756,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
 }
 
 /*! Binding helper. */
-bool DeRestPluginPrivate::MakeBind(Sensor *sensor, quint8 srcEndpoint , quint16 srcCluster, QString gid)
+bool DeRestPluginPrivate::makeBind(Sensor *sensor, quint8 srcEndpoint , quint16 srcCluster, QString gid)
 {
     bool ret = false;
 
