@@ -1169,12 +1169,12 @@ bool DeRestPluginPrivate::sendConfigureReportingRequest(BindingTask &bt)
             rq.maxInterval = 3600;
             rq.reportableChange8bit = 0;
         }
-        else if (sensor && (sensor->modelId() == QLatin1String("Lightify Switch Mini") ||
-                            sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY")))
+        else if (sensor && (sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) ||
+                            sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY"))) )
         {
-            rq.attributeId = 0x0020;    // battery voltage
-            rq.minInterval = 900;       // 15 mins - from zigbee2mqtt
-            rq.maxInterval = 3600;      // 1 hour  - from zigbee2mqtt
+            rq.attributeId = 0x0020;   // battery voltage
+            rq.minInterval = 21600;    // using 6 hours due to small battery capacity
+            rq.maxInterval = 21600;
             rq.reportableChange8bit = 0;
         }
         else if (sensor && (sensor->modelId().startsWith(QLatin1String("SMSZB-120")) || // Develco smoke sensor
