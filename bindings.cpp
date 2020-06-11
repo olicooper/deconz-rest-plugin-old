@@ -2436,6 +2436,14 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         DBG_Printf(DBG_INFO_L2, "skip check bindings for client clusters (no group)\n");
         return false;
     }
+    
+    // prevent binding action if otau was busy recently
+    if (otauLastBusyTimeDelta() < OTA_LOW_PRIORITY_TIME)
+    {
+        return false;
+    }
+
+    bool ret = false;
 
     std::vector<quint8> srcEndpoints;
     QStringList gids = item->toString().split(',', QString::SkipEmptyParts);
@@ -2529,19 +2537,15 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
     // OSRAM 3 button remote
     else if (sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) )
     {
-        clusters.push_back(ONOFF_CLUSTER_ID);
-        clusters.push_back(LEVEL_CLUSTER_ID);
-        clusters.push_back(COLOR_CLUSTER_ID);
-
-        // We bind all endpoints to a single group, so we need to trick the for loop by 
-        // creating dummy group entries that point to the first group so all endpoints are bound properly.
-        QString gid0 = gids[0];
-        gids.append(gid0);
-        gids.append(gid0);
-
-        srcEndpoints.push_back(0x01);
-        srcEndpoints.push_back(0x02);
-        srcEndpoints.push_back(0x03);
+        MakeBind(sensor, 0x01 , ONOFF_CLUSTER_ID, gid0);
+        MakeBind(sensor, 0x01 , LEVEL_CLUSTER_ID, gid0);
+        MakeBind(sensor, 0x01 , COLOR_CLUSTER_ID, gid0);
+        MakeBind(sensor, 0x02 , ONOFF_CLUSTER_ID, gid0);
+        MakeBind(sensor, 0x02 , LEVEL_CLUSTER_ID, gid0);
+        MakeBind(sensor, 0x02 , COLOR_CLUSTER_ID, gid0);
+        MakeBind(sensor, 0x03 , ONOFF_CLUSTER_ID, gid0);
+        MakeBind(sensor, 0x03 , LEVEL_CLUSTER_ID, gid0);
+        MakeBind(sensor, 0x03 , COLOR_CLUSTER_ID, gid0);   
     }
     // OSRAM 4 button remote
     else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) )
@@ -2674,14 +2678,8 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
     {
         return false;
     }
-
-    // prevent binding action if otau was busy recently
-    if (otauLastBusyTimeDelta() < OTA_LOW_PRIORITY_TIME)
-    {
-        return false;
-    }
-
-    bool ret = false;
+    
+    
     for (int j = 0; j < (int)srcEndpoints.size() && j < gids.size(); j++)
     {
         QString gid = gids[j];
@@ -2751,6 +2749,47 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
     }
 
     return ret;
+}
+
+/*! Binding helper. */
+bool DeRestPluginPrivate::MakeBind(Sensor *sensor, quint8 srcEndpoint , quint16 srcCluster, QString gid)
+{
+    bool ret = false;
+
+    Group *group = getGroupForId(gid);
+
+    DBG_Printf(DBG_ZDP, "0x%016llX [%s] create binding (S) for client cluster 0x%04X on endpoint 0x%02X\n",
+               sensor->address().ext(), qPrintable(sensor->modelId()), srcCluster, srcEndpoint);
+
+    BindingTask bindingTask;
+
+    bindingTask.state = BindingTask::StateIdle;
+    bindingTask.action = BindingTask::ActionBind;
+    bindingTask.timeout = BindingTask::TimeoutEndDevice;
+    bindingTask.restNode = sensor;
+    Binding &bnd = bindingTask.binding;
+    bnd.srcAddress = sensor->address().ext();
+    bnd.dstAddrMode = deCONZ::ApsGroupAddress;
+    bnd.srcEndpoint = srcEndpoint;
+    bnd.clusterId = srcCluster;
+    
+    if (group)
+    {
+        bnd.dstAddress.group = group->address();
+    }
+
+    if (sensor->mgmtBindSupported())
+    {
+        bindingTask.state = BindingTask::StateCheck;
+    }
+
+    if (queueBindingTask(bindingTask))
+    {
+        ret = true;
+    }
+    
+    return ret;
+
 }
 
 /*! Creates groups for \p sensor if needed. */
