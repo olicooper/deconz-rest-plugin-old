@@ -2538,15 +2538,17 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
     // OSRAM 3 button remote
     else if (sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) )
     {
-        MakeBind(sensor, 0x01 , ONOFF_CLUSTER_ID, gid0);
-        MakeBind(sensor, 0x01 , LEVEL_CLUSTER_ID, gid0);
-        MakeBind(sensor, 0x01 , COLOR_CLUSTER_ID, gid0);
-        MakeBind(sensor, 0x02 , ONOFF_CLUSTER_ID, gid0);
-        MakeBind(sensor, 0x02 , LEVEL_CLUSTER_ID, gid0);
-        MakeBind(sensor, 0x02 , COLOR_CLUSTER_ID, gid0);
-        MakeBind(sensor, 0x03 , ONOFF_CLUSTER_ID, gid0);
-        MakeBind(sensor, 0x03 , LEVEL_CLUSTER_ID, gid0);
-        MakeBind(sensor, 0x03 , COLOR_CLUSTER_ID, gid0);   
+        makeBind(sensor, 0x01, ONOFF_CLUSTER_ID, gids[0]);
+        makeBind(sensor, 0x01, LEVEL_CLUSTER_ID, gids[0]);
+        // makeBind(sensor, 0x01, COLOR_CLUSTER_ID, gids[0]);
+
+        makeBind(sensor, 0x02, ONOFF_CLUSTER_ID, gids[0]);
+        makeBind(sensor, 0x02, LEVEL_CLUSTER_ID, gids[0]);
+        // makeBind(sensor, 0x02, COLOR_CLUSTER_ID, gids[0]);
+
+        // makeBind(sensor, 0x03, ONOFF_CLUSTER_ID, gids[0]);
+        // makeBind(sensor, 0x03, LEVEL_CLUSTER_ID, gids[0]);
+        makeBind(sensor, 0x03, COLOR_CLUSTER_ID, gids[0]);
     }
     // OSRAM 4 button remote
     else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) )
