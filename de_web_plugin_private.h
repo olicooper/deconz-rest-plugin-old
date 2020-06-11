@@ -428,7 +428,6 @@ extern const quint64 keenhomeMacPrefix;
 extern const quint64 lutronMacPrefix;
 extern const quint64 netvoxMacPrefix;
 extern const quint64 osramMacPrefix;
-extern const quint64 osram2MacPrefix;
 extern const quint64 philipsMacPrefix;
 extern const quint64 sinopeMacPrefix;
 extern const quint64 stMacPrefix;
@@ -511,8 +510,6 @@ inline bool checkMacVendor(quint64 addr, quint16 vendor)
         case VENDOR_OSRAM:
         case VENDOR_OSRAM_STACK:
             return prefix == osramMacPrefix ||
-                   prefix == osram2MacPrefix ||
-                   prefix == emberMacPrefix ||
                    prefix == heimanMacPrefix;
         case VENDOR_PHILIPS:
             return prefix == philipsMacPrefix;
@@ -1144,6 +1141,7 @@ public Q_SLOTS:
     bool checkSensorBindingsForClientClusters(Sensor *sensor);
     void checkSensorGroup(Sensor *sensor);
     void checkOldSensorGroups(Sensor *sensor);
+    bool DeRestPluginPrivate::MakeBind(Sensor *sensor, quint8 srcEndpoint , quint16 srcCluster, QString gid);
     void deleteGroupsWithDeviceMembership(const QString &id);
     void processUbisysBinding(Sensor *sensor, const Binding &bnd);
     void processUbisysC4Configuration(Sensor *sensor);

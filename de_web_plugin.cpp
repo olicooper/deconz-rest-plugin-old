@@ -92,7 +92,7 @@ const quint64 sinopeMacPrefix     = 0x500b910000000000ULL;
 const quint64 silabs4MacPrefix    = 0x680ae20000000000ULL;
 const quint64 ecozyMacPrefix      = 0x70b3d50000000000ULL;
 const quint64 osramMacPrefix      = 0x8418260000000000ULL;
-const quint64 osram2MacPrefix     = 0x7CB03E0000000000ULL;
+const quint64 embertecMacPrefix   = 0x848e960000000000ULL;
 const quint64 embertecMacPrefix   = 0x848e960000000000ULL;
 const quint64 silabsMacPrefix     = 0x90fd9f0000000000ULL;
 const quint64 zhejiangMacPrefix   = 0xb0ce180000000000ULL;
@@ -746,7 +746,9 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
                     }
                     else if (sensorNode->modelId().startsWith("C4") || // ubisys
                              sensorNode->modelId().startsWith("RC 110") || // innr RC 110
-                             sensorNode->modelId().startsWith("ICZB-RM")) // icasa remote
+                             sensorNode->modelId().startsWith("ICZB-RM") || // icasa remote
+                             sensorNode->modelId().startsWith(QLatin1String("Lightify Switch Mini")) || // Osram 3 button remote
+                             sensorNode->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) ) // Osram 4 button remote
                     {
                         sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
                     }
@@ -763,24 +765,15 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
                     {
                         sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
                     }
-                    else if (sensorNode->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || // Osram 4 button
-                             sensorNode->modelId().startsWith(QLatin1String("Lightify Switch Mini")) ) // Osram 3 button
-                    {
-                        sensorNode = getSensorNodeForAddressAndEndpoint(ind.srcAddress(), 0x01);
-                        DBG_Printf(DBG_INFO, "MyDebug 0.3\n");
-                    }
                     else
                     {
                         sensorNode = 0; // not supported
                     }
                 }
             }
-            
-            DBG_Printf(DBG_INFO, "MyDebug 1\n");
 
             if (sensorNode)
             {
-                DBG_Printf(DBG_INFO, "MyDebug 2\n");
                 sensorNode->rx();
                 sensorNode->incrementRxCounter();
                 ResourceItem *item = sensorNode->item(RConfigReachable);
@@ -3283,8 +3276,6 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
     }
 
     checkInstaModelId(sensor);
-    
-    DBG_Printf(DBG_INFO, "MyDebug 3\n");
 
     // DE Lighting Switch: probe for mode changes
     if (sensor->modelId() == QLatin1String("Lighting Switch") && ind.dstAddressMode() == deCONZ::ApsGroupAddress)
@@ -3402,7 +3393,6 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
         sensor->previousSequenceNumber = zclFrame.sequenceNumber();
         checkReporting = true;
     }
-    
     else if (sensor->modelId() == QLatin1String("Remote switch") || //legrand switch
              sensor->modelId() == QLatin1String("Double gangs remote switch") || //Legrand micro module
              sensor->modelId() == QLatin1String("Shutters central remote switch") || // legrand shutter switch
@@ -3418,8 +3408,8 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
     {
         checkReporting = true;
     }
-    else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || // Osram 4 button remote
-             sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")))    // Osram 3 button remote
+    else if (sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) || // Osram 3 button remote
+             sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")))  // Osram 4 button remote
     {
         checkReporting = true;
         checkClientCluster = true;
@@ -3575,14 +3565,16 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
                 stream.setByteOrder(QDataStream::LittleEndian);
                 quint16 attrId;
                 quint8 dataType;
+                quint8 pl3;
                 stream >> attrId;
                 stream >> dataType;
+                stream >> pl3;
 
                 // Xiaomi
                 if (ind.clusterId() == ONOFF_CLUSTER_ID && sensor->manufacturer() == QLatin1String("LUMI"))
                 {
                     ok = false;
-                    const quint16 pl3 = static_cast<quint16>(zclFrame.payload().at(3)) & 0xff;
+                    // const quint16 pl3 = static_cast<quint16>(zclFrame.payload().at(3)) & 0xff;
                     // payload: u16 attrId, u8 datatype, u8 data
                     if (attrId == 0x0000 && dataType == 0x10 && // onoff attribute
                         buttonMap->zclParam0 == pl3)
@@ -3628,7 +3620,7 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
                 {
                     ok = false;
                     if (attrId == 0x0055 && dataType == 0x21 && // Xiaomi non-standard attribute
-                        buttonMap->zclParam0 == zclFrame.payload().at(3))
+                        buttonMap->zclParam0 == pl3)
                     {
                         ok = true;
                     }
@@ -3682,8 +3674,8 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
                 ok = false;
                 if (zclFrame.payload().size() >= 2)
                 {
-                    uint8_t level = zclFrame.payload().at(0);
-                    uint8_t tt = zclFrame.payload().at(1);
+                    quint8 level = zclFrame.payload().at(0);
+                    quint8 tt = zclFrame.payload().at(1);
                     if (tt == 7) // button pressed
                     {
                         ok = buttonMap->zclParam0 == 0; // Toggle
@@ -3701,10 +3693,18 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
                     }
                 }
             }
+            else if (ind.clusterId() == LEVEL_CLUSTER_ID && zclFrame.commandId() == 0x04) // move to level (with on/off)
+            {
+                ok = false;
+                if (zclFrame.payload().size() >= 1)
+                {
+                    quint8 level = zclFrame.payload().at(0);
+                    ok = buttonMap->zclParam0 == level;
+                }
+            }
             else if (ind.clusterId() == LEVEL_CLUSTER_ID &&
                      (zclFrame.commandId() == 0x01 ||  // move
                       zclFrame.commandId() == 0x02 ||  // step
-                      zclFrame.commandId() == 0x04 ||  // move to level (with on/off)
                       zclFrame.commandId() == 0x05 ||  // move (with on/off)
                       zclFrame.commandId() == 0x06))   // step (with on/off)
             {
@@ -3800,22 +3800,21 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
                 }
 
             }
-            else if (ind.clusterId() == COLOR_CLUSTER_ID &&
-                     (zclFrame.commandId() == 0x01 ) )  // Move hue command
+            else if (ind.clusterId() == COLOR_CLUSTER_ID && (zclFrame.commandId() == 0x01 ) )  // Move hue command
             {
-                //just used by !osram device ATM
-                if (sensor->modelId()== QLatin1String("Switch 4x EU-LIGHTIFY") ||
-                    sensor->modelId()== QLatin1String("Lightify Switch Mini") )
+                // Only used by Osram devices currently
+                if (sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) || // Osram 3 button remote
+                    sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) ) // Osram 4 button remote
                 {
                     quint8 pl0 = zclFrame.payload().isEmpty() ? 0 : zclFrame.payload().at(0);
-                    if ( buttonMap->zclParam0 != pl0)
+                    if (buttonMap->zclParam0 != pl0)
                     {
                         ok = false;
                     }
                 }
                 
             }
- 
+
             if (ok && buttonMap->button != 0)
             {
                 DBG_Printf(DBG_INFO, "button %u %s\n", buttonMap->button, buttonMap->name);
@@ -4111,7 +4110,8 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const deCONZ::
                     {
                         // ignore second endpoint
                     }
-                    else if (modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || (modelId == QLatin1String("Lightify Switch Mini")) )
+                    else if (modelId.startsWith(QLatin1String("Lightify Switch Mini")) || // Osram 3 button remote
+                             modelId.startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) ) // Osram 4 button remote
                     {
                         // Don't create entry for this cluster
                     }
@@ -4504,7 +4504,8 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const deCONZ::
                     {
                         fpPresenceSensor.outClusters.push_back(ci->id());
                     }
-                    else if ( modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || modelId == QLatin1String("Lightify Switch Mini") )
+                    else if (modelId.startsWith(QLatin1String("Lightify Switch Mini")) || // Osram 3 button remote
+                             modelId.startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) ) // Osram 4 button remote
                     {
                         // Only create entry for endpoint 0x01
                         fpSwitch.outClusters.push_back(ci->id());
@@ -4591,7 +4592,8 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const deCONZ::
                 fpSwitch.endpoint = 2;
             }
             
-            if ( modelId == QLatin1String("Switch 4x EU-LIGHTIFY") || modelId == QLatin1String("Lightify Switch Mini") )
+            if (modelId.startsWith(QLatin1String("Lightify Switch Mini")) || // Osram 3 button remote
+                modelId.startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) ) // Osram 4 button remote
             {
                 sensor = getSensorNodeForAddress(node->address().ext());
                 if (sensor && sensor->deletedState() != Sensor::StateNormal)
@@ -6266,8 +6268,8 @@ void DeRestPluginPrivate::updateSensorNode(const deCONZ::NodeEvent &event)
                                     i->modelId().startsWith(QLatin1String("lumi.sen_ill")) || // Xiaomi ZB3.0 light sensor
                                     i->modelId().startsWith(QLatin1String("SZ-DWS04"))   || // Sercomm open/close sensor
                                     i->modelId().startsWith(QLatin1String("Tripper")) || // Quirky Tripper (Sercomm) open/close
-                                    i->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || // Osram 4 button switch
-                                    i->modelId().startsWith(QLatin1String("Lightify Switch Mini")) ) // Osram 3 button switch
+                                    i->modelId().startsWith(QLatin1String("Lightify Switch Mini")) || // Osram 3 button remote
+                                    i->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) ) // Osram 4 button remote
                                 {  }
                                 else
                                 {
@@ -8921,7 +8923,7 @@ bool DeRestPluginPrivate::readAttributes(RestNodeBase *restNode, quint8 endpoint
     TaskItem task;
     task.taskType = TaskReadAttributes;
 
-    task.req.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
+//    task.req.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
     task.req.setDstEndpoint(endpoint);
     task.req.setDstAddressMode(deCONZ::ApsExtAddress);
     task.req.dstAddress() = restNode->address();
@@ -9152,7 +9154,7 @@ bool DeRestPluginPrivate::readSceneAttributes(LightNode *lightNode, uint16_t gro
     task.lightNode = lightNode;
 
     task.req.setSendDelay(3); // delay a bit to let store scene finish
-    task.req.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
+//    task.req.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
     task.req.setDstEndpoint(lightNode->haEndpoint().endpoint());
     task.req.setDstAddressMode(deCONZ::ApsExtAddress);
     task.req.dstAddress() = lightNode->address();
@@ -9214,7 +9216,7 @@ bool DeRestPluginPrivate::readGroupMembership(LightNode *lightNode, const std::v
     TaskItem task;
     task.taskType = TaskGetGroupMembership;
 
-    task.req.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
+//    task.req.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
     task.req.setDstEndpoint(lightNode->haEndpoint().endpoint());
     task.req.setDstAddressMode(deCONZ::ApsExtAddress);
     task.req.dstAddress() = lightNode->address();
@@ -9470,7 +9472,7 @@ bool DeRestPluginPrivate::readSceneMembership(LightNode *lightNode, Group *group
     TaskItem task;
     task.taskType = TaskGetSceneMembership;
 
-    task.req.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
+//    task.req.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
     task.req.setDstEndpoint(lightNode->haEndpoint().endpoint());
     task.req.setDstAddressMode(deCONZ::ApsExtAddress);
     task.req.dstAddress() = lightNode->address();
@@ -10825,7 +10827,7 @@ void DeRestPluginPrivate::sendZclDefaultResponse(const deCONZ::ApsDataIndication
     apsReq.setProfileId(ind.profileId());
     apsReq.setRadius(0);
     apsReq.setClusterId(ind.clusterId());
-    apsReq.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
+    //apsReq.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
 
     deCONZ::ZclFrame outZclFrame;
     outZclFrame.setSequenceNumber(zclFrame.sequenceNumber());
@@ -11579,7 +11581,7 @@ void DeRestPluginPrivate::processGroupTasks()
 
     // set destination parameters
     task.req.dstAddress() = task.lightNode->address();
-    task.req.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
+//    task.req.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
     task.req.setDstEndpoint(task.lightNode->haEndpoint().endpoint());
     task.req.setSrcEndpoint(getSrcEndpoint(task.lightNode, task.req));
     task.req.setDstAddressMode(deCONZ::ApsExtAddress);
@@ -13377,8 +13379,6 @@ void DeRestPluginPrivate::handleDeviceAnnceIndication(const deCONZ::ApsDataIndic
             si->rx();
             found++;
             DBG_Printf(DBG_INFO, "DeviceAnnce of SensorNode: 0x%016llX [1]\n", si->address().ext());
-            //Disable or not ?
-            DBG_Printf(DBG_INFO, "Device Endpoint: 0x%02X\n", si->fingerPrint().endpoint);
 
             ResourceItem *item = si->item(RConfigReachable);
             if (item)
@@ -14275,7 +14275,7 @@ void DeRestPluginPrivate::delayedFastEnddeviceProbe(const deCONZ::NodeEvent *eve
             apsReq.setProfileId(ZDP_PROFILE_ID);
             apsReq.setRadius(0);
             apsReq.setClusterId(ZDP_ACTIVE_ENDPOINTS_CLID);
-            apsReq.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
+            //apsReq.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
 
             QDataStream stream(&apsReq.asdu(), QIODevice::WriteOnly);
             stream.setByteOrder(QDataStream::LittleEndian);
@@ -14325,7 +14325,7 @@ void DeRestPluginPrivate::delayedFastEnddeviceProbe(const deCONZ::NodeEvent *eve
                     apsReq.setProfileId(ZDP_PROFILE_ID);
                     apsReq.setRadius(0);
                     apsReq.setClusterId(ZDP_SIMPLE_DESCRIPTOR_CLID);
-                    apsReq.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
+                    //apsReq.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
 
                     QDataStream stream(&apsReq.asdu(), QIODevice::WriteOnly);
                     stream.setByteOrder(QDataStream::LittleEndian);
@@ -14442,7 +14442,7 @@ void DeRestPluginPrivate::delayedFastEnddeviceProbe(const deCONZ::NodeEvent *eve
                 apsReq.setProfileId(HA_PROFILE_ID);
                 apsReq.setRadius(0);
                 apsReq.setClusterId(IAS_ZONE_CLUSTER_ID);
-                apsReq.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
+                //apsReq.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
 
                 deCONZ::ZclFrame zclFrame;
                 zclFrame.setSequenceNumber(zclSeq++);
@@ -14511,7 +14511,7 @@ void DeRestPluginPrivate::delayedFastEnddeviceProbe(const deCONZ::NodeEvent *eve
             apsReq.setProfileId(HA_PROFILE_ID);
             apsReq.setRadius(0);
             apsReq.setClusterId(BASIC_CLUSTER_ID);
-            apsReq.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
+            //apsReq.setTxOptions(deCONZ::ApsTxAcknowledgedTransmission);
 
             deCONZ::ZclFrame zclFrame;
             zclFrame.setSequenceNumber(zclSeq++);
