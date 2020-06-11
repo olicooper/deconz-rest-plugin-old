@@ -908,6 +908,7 @@ bool DeRestPluginPrivate::sendConfigureReportingRequest(BindingTask &bt)
     {
         // zone status reporting only supported by some devices
         if (bt.restNode->node()->nodeDescriptor().manufacturerCode() != VENDOR_CENTRALITE &&
+            bt.restNode->node()->nodeDescriptor().manufacturerCode() != VENDOR_C2DF &&
             bt.restNode->node()->nodeDescriptor().manufacturerCode() != VENDOR_SAMJIN)
         {
             return false;
@@ -923,8 +924,7 @@ bool DeRestPluginPrivate::sendConfigureReportingRequest(BindingTask &bt)
 
         const Sensor *sensor = dynamic_cast<Sensor *>(bt.restNode);
 
-        if (sensor->type() == QLatin1String("ZHAVibration") && sensor->modelId() == QLatin1String("multi")) // FIXME: check if this also applies to other Samjin sensors
-        // if (bt.restNode->node()->nodeDescriptor().manufacturerCode() == VENDOR_SAMJIN)
+        if (sensor->type() == QLatin1String("ZHAOpenClose") && sensor->modelId().startsWith(QLatin1String("multi")))
         {
             // Only configure periodic reports, as events are already sent though zone status change notification commands
             rq.minInterval = 300;
@@ -1160,12 +1160,21 @@ bool DeRestPluginPrivate::sendConfigureReportingRequest(BindingTask &bt)
         else if (sensor && (sensor->modelId() == QLatin1String("Motion Sensor-A") ||
                             sensor->modelId() == QLatin1String("tagv4") ||
                             sensor->modelId() == QLatin1String("motionv4") ||
+                            sensor->modelId() == QLatin1String("multiv4") ||
                             sensor->modelId() == QLatin1String("RFDL-ZB-MS") ||
                             sensor->modelId() == QLatin1String("Zen-01")))
         {
             rq.attributeId = 0x0020;   // battery voltage
             rq.minInterval = 3600;
             rq.maxInterval = 3600;
+            rq.reportableChange8bit = 0;
+        }
+        else if (sensor && (sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) ||  // Osram 3 button remote
+                            sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY"))) ) // Osram 4 button remote
+        {
+            rq.attributeId = 0x0020;    // battery voltage
+            rq.minInterval = 3600;      // 1 hour
+            rq.maxInterval = 3600;      // 1 hour
             rq.reportableChange8bit = 0;
         }
         else if (sensor && (sensor->modelId().startsWith(QLatin1String("SMSZB-120")) || // Develco smoke sensor
@@ -1430,7 +1439,7 @@ bool DeRestPluginPrivate::sendConfigureReportingRequest(BindingTask &bt)
 
         return sendConfigureReportingRequest(bt, {rq, rq2, rq3, rq4});
     }
-    else if (bt.binding.clusterId == SAMJIN_CLUSTER_ID && checkMacVendor(bt.restNode->address(), VENDOR_SAMJIN))
+    else if (bt.binding.clusterId == SAMJIN_CLUSTER_ID)
     {
         Sensor *sensor = dynamic_cast<Sensor*>(bt.restNode);
         if (!sensor)
@@ -1439,32 +1448,44 @@ bool DeRestPluginPrivate::sendConfigureReportingRequest(BindingTask &bt)
         }
 
         // based on https://github.com/SmartThingsCommunity/SmartThingsPublic/blob/master/devicetypes/smartthings/smartsense-multi-sensor.src/smartsense-multi-sensor.groovy
-        if (sensor->type() == QLatin1String("ZHAVibration") && sensor->modelId() == QLatin1String("multi"))
+        if (sensor->type() == QLatin1String("ZHAVibration"))
         {
-            rq.dataType = deCONZ::Zcl16BitInt;
-            rq.attributeId = 0x0012; // acceleration x
-            rq.minInterval = 1;
-            rq.maxInterval = 300;
-            rq.reportableChange16bit = 1;
-            rq.manufacturerCode = VENDOR_SAMJIN;
+            const quint16 manufacturerCode = sensor->manufacturer() == QLatin1String("Samjin") ? VENDOR_SAMJIN
+                : sensor->manufacturer() == QLatin1String("SmartThings") ? VENDOR_PHYSICAL : VENDOR_CENTRALITE;
+            const quint16 minInterval = manufacturerCode == VENDOR_SAMJIN ? 0 : 1;
+
+            rq.dataType = deCONZ::Zcl8BitBitMap;
+            rq.attributeId = 0x0010; // active
+            rq.minInterval = manufacturerCode == VENDOR_SAMJIN ? 0 : 10;
+            rq.maxInterval = 3600;
+            rq.reportableChange8bit = 1;
+            rq.manufacturerCode = manufacturerCode;
+
+            ConfigureReportingRequest rq1;
+            rq1.dataType = deCONZ::Zcl16BitInt;
+            rq1.attributeId = 0x0012; // acceleration x
+            rq1.minInterval = minInterval;
+            rq1.maxInterval = 300;
+            rq1.reportableChange16bit = 1;
+            rq1.manufacturerCode = manufacturerCode;
 
             ConfigureReportingRequest rq2;
             rq2.dataType = deCONZ::Zcl16BitInt;
             rq2.attributeId = 0x0013; // acceleration y
-            rq2.minInterval = 1;
+            rq2.minInterval = minInterval;
             rq2.maxInterval = 300;
             rq2.reportableChange16bit = 1;
-            rq2.manufacturerCode = VENDOR_SAMJIN;
+            rq2.manufacturerCode = manufacturerCode;
 
             ConfigureReportingRequest rq3;
             rq3.dataType = deCONZ::Zcl16BitInt;
             rq3.attributeId = 0x0014; // acceleration z
-            rq3.minInterval = 1;
+            rq3.minInterval = minInterval;
             rq3.maxInterval = 300;
             rq3.reportableChange16bit = 1;
-            rq3.manufacturerCode = VENDOR_SAMJIN;
+            rq3.manufacturerCode = manufacturerCode;
 
-            return sendConfigureReportingRequest(bt, {rq, rq2, rq3});
+            return sendConfigureReportingRequest(bt, {rq, rq1, rq2, rq3});
         }
     }
     else if (bt.binding.clusterId == BASIC_CLUSTER_ID && checkMacVendor(bt.restNode->address(), VENDOR_PHILIPS))
@@ -1884,6 +1905,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
         sensor->modelId().startsWith(QLatin1String("3200-S")) ||
         sensor->modelId().startsWith(QLatin1String("3305-S")) ||
         sensor->modelId().startsWith(QLatin1String("3320-L")) ||
+        sensor->modelId().startsWith(QLatin1String("3323")) ||
         sensor->modelId().startsWith(QLatin1String("3326-L")) ||
         // dresden elektronik
         (sensor->manufacturer() == QLatin1String("dresden elektronik") && sensor->modelId() == QLatin1String("de_spect")) ||
@@ -1910,7 +1932,8 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
         sensor->modelId().startsWith(QLatin1String("KADRILJ")) ||
         sensor->modelId().startsWith(QLatin1String("SYMFONISK")) ||
         // OSRAM
-        sensor->modelId() == QLatin1String("Lightify Switch Mini") || // Mini remote with > and <
+        sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) ||  // Osram 3 button remote
+        sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || // Osram 4 button remote
         // Keen Home
         sensor->modelId().startsWith(QLatin1String("SV01-")) ||
         // Trust ZPIR-8000
@@ -1951,10 +1974,10 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
         // SmartThings
         sensor->modelId().startsWith(QLatin1String("tagv4")) ||
         sensor->modelId().startsWith(QLatin1String("motionv4")) ||
-        (sensor->manufacturer() == QLatin1String("Samjin") && sensor->modelId() == QLatin1String("button")) ||
+        sensor->modelId() == QLatin1String("button") ||
         (sensor->manufacturer() == QLatin1String("Samjin") && sensor->modelId() == QLatin1String("motion")) ||
-        (sensor->manufacturer() == QLatin1String("Samjin") && sensor->modelId() == QLatin1String("multi")) ||
-        (sensor->manufacturer() == QLatin1String("Samjin") && sensor->modelId() == QLatin1String("water")) ||
+        sensor->modelId().startsWith(QLatin1String("multi")) ||
+        sensor->modelId() == QLatin1String("water") ||
         (sensor->manufacturer() == QLatin1String("Samjin") && sensor->modelId() == QLatin1String("outlet")) ||
         // Bitron
         sensor->modelId().startsWith(QLatin1String("902010")) ||
@@ -2019,6 +2042,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
         sensor->modelId().startsWith(QLatin1String("RH3052")) ||
         // Xiaomi
         sensor->modelId().startsWith(QLatin1String("lumi.plug.maeu01")) ||
+        sensor->modelId().startsWith(QLatin1String("lumi.sen_ill.mgl01")) ||
         // iris
         sensor->modelId().startsWith(QLatin1String("1116-S")) ||
         sensor->modelId().startsWith(QLatin1String("1117-S")) ||
@@ -2028,10 +2052,17 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
         sensor->modelId().startsWith(QLatin1String("E13-")) ||
         // Immax
         sensor->modelId() == QLatin1String("Plug-230V-ZB3.0") ||
+        sensor->modelId() == QLatin1String("4in1-Sensor-ZB3.0") ||
         // Sercomm
         sensor->modelId().startsWith(QLatin1String("SZ-")) ||
+        sensor->modelId() == QLatin1String("Tripper") ||
         // WAXMAN
-        sensor->modelId() == QLatin1String("leakSMART Water Sensor V2"))
+        sensor->modelId() == QLatin1String("leakSMART Water Sensor V2") ||
+        // RGBgenie
+        sensor->modelId().startsWith(QLatin1String("RGBgenie ZB-5")) ||
+        sensor->modelId().startsWith(QLatin1String("ZGRC-KEY")) ||
+        // Embertec
+        sensor->modelId().startsWith(QLatin1String("BQZ10-AU")))
     {
         deviceSupported = true;
         if (!sensor->node()->nodeDescriptor().receiverOnWhenIdle() ||
@@ -2069,6 +2100,16 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
         if (deviceSupported)
         {
             action = BindingTask::ActionBind;
+        }
+    }
+    
+    if (sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) || // Osram 3 button remote
+        sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) ) // Osram 4 button remote
+    {
+        // Make bind only for endpoint 01
+        if (sensor->fingerPrint().endpoint != 0x01)
+        {
+            return false;
         }
     }
 
@@ -2124,7 +2165,10 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
             {
                 continue; // process only once
             }
-            if (sensor->modelId() == QLatin1String("Remote switch") || sensor->modelId() == QLatin1String("Shutters central remote switch") || sensor->modelId() == QLatin1String("Double gangs remote switch") )
+            if (sensor->modelId() == QLatin1String("Remote switch") || 
+                sensor->modelId() == QLatin1String("Shutters central remote switch") ||
+                sensor->modelId() == QLatin1String("Double gangs remote switch") ||
+                sensor->modelId() == QLatin1String("Remote toggle switch") )
             {
                 //Those device don't support report attribute
                 continue;
@@ -2141,6 +2185,8 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
                      sensor->modelId() == QLatin1String("MOSZB-130") ||
                      sensor->modelId() == QLatin1String("FLSZB-110") ||
                      sensor->modelId() == QLatin1String("Zen-01") ||
+                     sensor->modelId() == QLatin1String("Lightify Switch Mini") ||  // Osram 3 button remote
+                     sensor->modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") || // Osram 4 button remote
                      sensor->modelId() == QLatin1String("Remote switch") ||
                      sensor->modelId() == QLatin1String("Shutters central remote switch") ||
                      sensor->modelId() == QLatin1String("Double gangs remote switch") ||
@@ -2148,6 +2194,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
                      sensor->modelId().endsWith(QLatin1String("86opcn01")) || // Aqara Opple
                      sensor->modelId().startsWith(QLatin1String("1116-S")) ||
                      sensor->modelId().startsWith(QLatin1String("1117-S")) ||
+                     sensor->modelId().startsWith(QLatin1String("3323")) ||
                      sensor->modelId().startsWith(QLatin1String("3326-L")) ||
                      sensor->modelId().startsWith(QLatin1String("3305-S")) ||
                      sensor->modelId() == QLatin1String("113D"))
@@ -2246,14 +2293,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForAttributeReporting(Sensor *senso
         }
         else if (*i == SAMJIN_CLUSTER_ID)
         {
-            if (sensor->modelId() == QLatin1String("multi"))
-            {
-                val = sensor->getZclValue(*i, 0x0012); // Acceleration X
-            }
-            else
-            {
-                continue;
-            }
+            val = sensor->getZclValue(*i, 0x0012); // Acceleration X
         }
 
         quint16 maxInterval = (val.maxInterval > 0) ? (val.maxInterval * 3 / 2) : (60 * 45);
@@ -2486,13 +2526,41 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
     //     clusters.push_back(LEVEL_CLUSTER_ID);
     //     srcEndpoints.push_back(sensor->fingerPrint().endpoint);
     // }
-    // OSRAM mini switch
-    else if (sensor->modelId() == QLatin1String("Lightify Switch Mini"))
+    // OSRAM 3 button remote
+    else if (sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) )
     {
         clusters.push_back(ONOFF_CLUSTER_ID);
         clusters.push_back(LEVEL_CLUSTER_ID);
-        clusters.push_back(SCENE_CLUSTER_ID);
-        srcEndpoints.push_back(sensor->fingerPrint().endpoint);
+        clusters.push_back(COLOR_CLUSTER_ID);
+
+        // We bind all endpoints to a single group, so we need to trick the for loop by 
+        // creating dummy group entries that point to the first group so all endpoints are bound properly.
+        QString gid0 = gids[0];
+        gids.append(gid0);
+        gids.append(gid0);
+
+        srcEndpoints.push_back(0x01);
+        srcEndpoints.push_back(0x02);
+        srcEndpoints.push_back(0x03);
+    }
+    // OSRAM 4 button remote
+    else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) )
+    {
+        clusters.push_back(ONOFF_CLUSTER_ID);
+        clusters.push_back(LEVEL_CLUSTER_ID);
+        clusters.push_back(COLOR_CLUSTER_ID);
+
+        // We bind all endpoints to a single group, so we need to trick the for loop by 
+        // creating dummy group entries that point to the first group so all endpoints are bound properly.
+        QString gid0 = gids[0];
+        gids.append(gid0);
+        gids.append(gid0);
+        gids.append(gid0);
+
+        srcEndpoints.push_back(0x01);
+        srcEndpoints.push_back(0x02);
+        srcEndpoints.push_back(0x03);
+        srcEndpoints.push_back(0x04);
     }
     // LEGRAND Remote switch, simple and double
     else if (sensor->modelId() == QLatin1String("Remote switch") ||
@@ -2573,20 +2641,34 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         srcEndpoints.push_back(0x04);
         sensor->setMgmtBindSupported(true);
     }
-    // LifeControl Enviroment Sensor
-    else if (sensor->modelId().startsWith(QLatin1String("VOC_Sensor")))
-    {
-        clusters.push_back(TEMPERATURE_MEASUREMENT_CLUSTER_ID);
-        srcEndpoints.push_back(0x00);
-        srcEndpoints.push_back(0x01);
-        sensor->setMgmtBindSupported(true);
-    }
     // Bitron remote control
     else if (sensor->modelId().startsWith(QLatin1String("902010/23")))
     {
         clusters.push_back(ONOFF_CLUSTER_ID);
         clusters.push_back(LEVEL_CLUSTER_ID);
         srcEndpoints.push_back(sensor->fingerPrint().endpoint);
+    }
+    // Heiman remote control
+    else if (sensor->modelId().startsWith(QLatin1String("RC_V14")))
+    {
+        clusters.push_back(IAS_ACE_CLUSTER_ID);
+        srcEndpoints.push_back(sensor->fingerPrint().endpoint);
+    }
+    // RGBgenie remote control
+    else if (sensor->modelId().startsWith(QLatin1String("RGBgenie ZB-5")))
+    {
+        clusters.push_back(ONOFF_CLUSTER_ID);
+        clusters.push_back(LEVEL_CLUSTER_ID);
+        clusters.push_back(SCENE_CLUSTER_ID);
+        srcEndpoints.push_back(sensor->fingerPrint().endpoint);
+    }
+    // RGBgenie remote control
+    else if (sensor->modelId().startsWith(QLatin1String("ZGRC-KEY")))
+    {
+        clusters.push_back(ONOFF_CLUSTER_ID);
+        clusters.push_back(LEVEL_CLUSTER_ID);
+        srcEndpoints.push_back(0x01);
+        srcEndpoints.push_back(0x02);
     }
     else
     {
@@ -2721,6 +2803,39 @@ void DeRestPluginPrivate::checkSensorGroup(Sensor *sensor)
          sensor->modelId() == QLatin1String("Remote motion sensor"))
     {
         //Make group but without uniqueid
+    }
+    else if (sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) || // Osram 3 button remote
+             sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) ) // Osram 4 button remote
+    {
+        quint8 maxEp = 0x03;
+        if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")))
+        {
+            maxEp = 0x04;
+        }
+        for (quint8 ep = 0x01; !group && ep <= maxEp; ep++)
+        {
+            Sensor *s = getSensorNodeForAddressAndEndpoint(sensor->address(), ep);
+            if (s && s->deletedState() == Sensor::StateNormal && s != sensor)
+            {
+                ResourceItem *item = s->item(RConfigGroup);
+                if (item && item->lastSet().isValid())
+                {
+                    const QString &gid = item->toString();
+
+                    std::vector<Group>::iterator i = groups.begin();
+                    std::vector<Group>::iterator end = groups.end();
+
+                    for (; i != end; ++i)
+                    {
+                        if (!gid.isEmpty() && i->state() == Group::StateNormal && i->id() == gid)
+                        {
+                            group = &*i;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
     else if (sensor->modelId() == QLatin1String("RB01") ||
              sensor->modelId() == QLatin1String("RM01"))
