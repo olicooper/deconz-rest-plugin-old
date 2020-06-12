@@ -625,7 +625,6 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
     {
         return;
     }
-    DBG_Printf(DBG_INFO, "MyDebug apsdeDataIndication profileId:0x%04X, cid:0x%04X\n", ind.profileId(), ind.clusterId());
 
     if ((ind.profileId() == HA_PROFILE_ID) || (ind.profileId() == ZLL_PROFILE_ID))
     {
@@ -732,13 +731,10 @@ void DeRestPluginPrivate::apsdeDataIndication(const deCONZ::ApsDataIndication &i
 
             if (!sensorNode)
             {
-                DBG_Printf(DBG_INFO, "MyDebug 0.1\n");
                 // No sensorNode found for endpoint - check for multiple endpoints mapped to the same resource
                 sensorNode = getSensorNodeForAddress(ind.srcAddress());
                 if (sensorNode)
                 {
-                    DBG_Printf(DBG_INFO, "MyDebug 0.2 modelId: %s\n", qPrintable(sensorNode->modelId()));
-                    
                     if (zclFrame.manufacturerCode() == VENDOR_PHILIPS)
                     {
                         // Hue dimmer switch
@@ -3444,7 +3440,6 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
 
     if (ind.dstAddressMode() == deCONZ::ApsGroupAddress && ind.dstAddress().group() != 0)
     {
-        DBG_Printf(DBG_INFO, "MyDebug 5.1\n");
         QStringList gids;
         ResourceItem *item = sensor->addItem(DataTypeString, RConfigGroup);
 
@@ -3530,7 +3525,6 @@ void DeRestPluginPrivate::checkSensorButtonEvent(Sensor *sensor, const deCONZ::A
         }
         else
         {
-        DBG_Printf(DBG_INFO, "MyDebug 5.2\n");
             if (!gids.contains(gid))
             {
                 item->setValue(gid);
@@ -5670,7 +5664,6 @@ void DeRestPluginPrivate::addSensorNode(const deCONZ::Node *node, const SensorFi
                     sensorNode.modelId() == QLatin1String("Switch 4x EU-LIGHTIFY") ||
                     sensorNode.modelId() == QLatin1String("Lightify Switch Mini")*/)
                 {
-                    DBG_Printf(DBG_INFO, "MyDebug 40 SensorNode %u / %s\n", sensorNode.id().toUInt(), qPrintable(sensorNode.name()));
                     //Ask for battery but only every day max
                     //int diff = idleTotalCounter - sensorNode.lastRead(READ_BATTERY);
                     //if (diff > 24 * 3600)
@@ -13252,7 +13245,7 @@ void DeRestPluginPrivate::handleDeviceAnnceIndication(const deCONZ::ApsDataIndic
         stream >> ext;
         stream >> macCapabilities;
     }
-    DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce nodesSize: %u, nwk: 0x%04X\n", (uint)nodes.size(), nwk);
+    
     for (; i != end; ++i)
     {
         if (i->state() != LightNode::StateNormal)
@@ -13364,12 +13357,10 @@ void DeRestPluginPrivate::handleDeviceAnnceIndication(const deCONZ::ApsDataIndic
     std::vector<Sensor>::iterator si = sensors.begin();
     std::vector<Sensor>::iterator send = sensors.end();
 
-    DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce 1\n");
     for (; si != send; ++si)
     {
         if (si->deletedState() != Sensor::StateNormal)
         {
-            DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce 1.1\n");
             continue;
         }
 
@@ -13421,8 +13412,6 @@ void DeRestPluginPrivate::handleDeviceAnnceIndication(const deCONZ::ApsDataIndic
             }
         }
     }
-    
-    DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce 2 foundCount:%d\n", found);
 
     if (searchSensorsState == SearchSensorsActive)
     {
@@ -13442,7 +13431,6 @@ void DeRestPluginPrivate::handleDeviceAnnceIndication(const deCONZ::ApsDataIndic
                 }
                 i++;
             }
-            DBG_Printf(DBG_INFO, "MyDebug DeviceAnnce 2.1 nodeCount:%d\n", i);
         }
 
         deCONZ::ZclFrame zclFrame; // dummy
