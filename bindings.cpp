@@ -2542,17 +2542,39 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
     // OSRAM 3 button remote
     else if (sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) )
     {
-        makeBind(sensor, 0x01, ONOFF_CLUSTER_ID, gids[0]);
-        makeBind(sensor, 0x01, LEVEL_CLUSTER_ID, gids[0]);
-        // makeBind(sensor, 0x01, COLOR_CLUSTER_ID, gids[0]);
+        // obviously this is bad code, but its only a test after all! :)
 
-        makeBind(sensor, 0x02, ONOFF_CLUSTER_ID, gids[0]);
-        makeBind(sensor, 0x02, LEVEL_CLUSTER_ID, gids[0]);
-        // makeBind(sensor, 0x02, COLOR_CLUSTER_ID, gids[0]);
+        if (makeBind(sensor, 0x01, ONOFF_CLUSTER_ID, gids[0])) { ret = true; }
+        if (makeBind(sensor, 0x01, LEVEL_CLUSTER_ID, gids[0])) { ret = true; }
+        // if (makeBind(sensor, 0x01, COLOR_CLUSTER_ID, gids[0])) { ret = true; }
 
-        // makeBind(sensor, 0x03, ONOFF_CLUSTER_ID, gids[0]);
-        // makeBind(sensor, 0x03, LEVEL_CLUSTER_ID, gids[0]);
-        makeBind(sensor, 0x03, COLOR_CLUSTER_ID, gids[0]);
+        if (makeBind(sensor, 0x02, ONOFF_CLUSTER_ID, gids[0])) { ret = true; }
+        if (makeBind(sensor, 0x02, LEVEL_CLUSTER_ID, gids[0])) { ret = true; }
+        // if (makeBind(sensor, 0x02, COLOR_CLUSTER_ID, gids[0])) { ret = true; }
+
+        // if (makeBind(sensor, 0x03, ONOFF_CLUSTER_ID, gids[0])) { ret = true; }
+        // if (makeBind(sensor, 0x03, LEVEL_CLUSTER_ID, gids[0])) { ret = true; }
+        if (makeBind(sensor, 0x03, COLOR_CLUSTER_ID, gids[0])) { ret = true; }
+
+        #pragma region copied from the end of this function so we can return inside this if statement
+        if (sensor->mgmtBindSupported())
+        {
+            if (!sensor->mustRead(READ_BINDING_TABLE))
+            {
+                sensor->enableRead(READ_BINDING_TABLE);
+                sensor->setNextReadTime(READ_BINDING_TABLE, queryTime);
+                queryTime = queryTime.addSecs(1);
+            }
+            q->startZclAttributeTimer(1000);
+        }
+
+        if (!bindingTimer->isActive())
+        {
+            bindingTimer->start();
+        }
+
+        return ret;
+        #pragma endregion
     }
     // OSRAM 4 button remote
     else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || 
