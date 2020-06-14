@@ -2546,6 +2546,7 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         makeBind(sensor, 0x01, LEVEL_CLUSTER_ID, gids[0]);
         makeBind(sensor, 0x02, ONOFF_CLUSTER_ID, gids[0]);
         makeBind(sensor, 0x02, LEVEL_CLUSTER_ID, gids[0]);
+        makeBind(sensor, 0x03, LEVEL_CLUSTER_ID, gids[0]);
         ret = makeBind(sensor, 0x03, COLOR_CLUSTER_ID, gids[0]);
     }
     // OSRAM 4 button remote
