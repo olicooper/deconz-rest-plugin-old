@@ -2542,39 +2542,11 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
     // OSRAM 3 button remote
     else if (sensor->modelId().startsWith(QLatin1String("Lightify Switch Mini")) )
     {
-        // obviously this is bad code, but its only a test after all! :)
-
-        if (makeBind(sensor, 0x01, ONOFF_CLUSTER_ID, gids[0])) { ret = true; }
-        if (makeBind(sensor, 0x01, LEVEL_CLUSTER_ID, gids[0])) { ret = true; }
-        // if (makeBind(sensor, 0x01, COLOR_CLUSTER_ID, gids[0])) { ret = true; }
-
-        if (makeBind(sensor, 0x02, ONOFF_CLUSTER_ID, gids[0])) { ret = true; }
-        if (makeBind(sensor, 0x02, LEVEL_CLUSTER_ID, gids[0])) { ret = true; }
-        // if (makeBind(sensor, 0x02, COLOR_CLUSTER_ID, gids[0])) { ret = true; }
-
-        // if (makeBind(sensor, 0x03, ONOFF_CLUSTER_ID, gids[0])) { ret = true; }
-        // if (makeBind(sensor, 0x03, LEVEL_CLUSTER_ID, gids[0])) { ret = true; }
-        if (makeBind(sensor, 0x03, COLOR_CLUSTER_ID, gids[0])) { ret = true; }
-
-        #pragma region copied from the end of this function so we can return inside this if statement
-        if (sensor->mgmtBindSupported())
-        {
-            if (!sensor->mustRead(READ_BINDING_TABLE))
-            {
-                sensor->enableRead(READ_BINDING_TABLE);
-                sensor->setNextReadTime(READ_BINDING_TABLE, queryTime);
-                queryTime = queryTime.addSecs(1);
-            }
-            q->startZclAttributeTimer(1000);
-        }
-
-        if (!bindingTimer->isActive())
-        {
-            bindingTimer->start();
-        }
-
-        return ret;
-        #pragma endregion
+        makeBind(sensor, 0x01, ONOFF_CLUSTER_ID, gids[0]);
+        makeBind(sensor, 0x01, LEVEL_CLUSTER_ID, gids[0]);
+        makeBind(sensor, 0x02, ONOFF_CLUSTER_ID, gids[0]);
+        makeBind(sensor, 0x02, LEVEL_CLUSTER_ID, gids[0]);
+        ret = makeBind(sensor, 0x03, COLOR_CLUSTER_ID, gids[0]);
     }
     // OSRAM 4 button remote
     else if (sensor->modelId().startsWith(QLatin1String("Switch 4x EU-LIGHTIFY")) || 
@@ -2595,6 +2567,13 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
         srcEndpoints.push_back(0x02);
         srcEndpoints.push_back(0x03);
         srcEndpoints.push_back(0x04);
+
+        // makeBind(sensor, 0x01, ONOFF_CLUSTER_ID, gids[0]);
+        // makeBind(sensor, 0x01, LEVEL_CLUSTER_ID, gids[0]);
+        // makeBind(sensor, 0x02, COLOR_CLUSTER_ID, gids[0]);
+        // makeBind(sensor, 0x03, ONOFF_CLUSTER_ID, gids[0]);
+        // makeBind(sensor, 0x03, LEVEL_CLUSTER_ID, gids[0]);
+        // ret = makeBind(sensor, 0x04, COLOR_CLUSTER_ID, gids[0]);
     }
     // LEGRAND Remote switch, simple and double
     else if (sensor->modelId() == QLatin1String("Remote switch") ||
@@ -2785,14 +2764,9 @@ bool DeRestPluginPrivate::checkSensorBindingsForClientClusters(Sensor *sensor)
 }
 
 /*! Binding helper. */
-bool DeRestPluginPrivate::makeBind(Sensor *sensor, quint8 srcEndpoint , quint16 srcCluster, QString gid)
+bool DeRestPluginPrivate::makeBind(Sensor *sensor, quint8 srcEndpoint, quint16 srcCluster, QString gid)
 {
-    bool ret = false;
-
     Group *group = getGroupForId(gid);
-
-    DBG_Printf(DBG_ZDP, "0x%016llX [%s] create binding (S) for client cluster 0x%04X on endpoint 0x%02X\n",
-               sensor->address().ext(), qPrintable(sensor->modelId()), srcCluster, srcEndpoint);
 
     BindingTask bindingTask;
 
@@ -2800,15 +2774,35 @@ bool DeRestPluginPrivate::makeBind(Sensor *sensor, quint8 srcEndpoint , quint16 
     bindingTask.action = BindingTask::ActionBind;
     bindingTask.timeout = BindingTask::TimeoutEndDevice;
     bindingTask.restNode = sensor;
+    
     Binding &bnd = bindingTask.binding;
     bnd.srcAddress = sensor->address().ext();
-    bnd.dstAddrMode = deCONZ::ApsGroupAddress;
     bnd.srcEndpoint = srcEndpoint;
     bnd.clusterId = srcCluster;
     
+    //Use group ?
     if (group)
     {
+        DBG_Printf(DBG_ZDP, "0x%016llX [%s] create binding (G) for client cluster 0x%04X on endpoint 0x%02X\n",
+           sensor->address().ext(), qPrintable(sensor->modelId()), srcCluster, srcEndpoint);
+        
+        bnd.dstAddrMode = deCONZ::ApsGroupAddress;
         bnd.dstAddress.group = group->address();
+    }
+    // Else bind to gateway
+    else
+    {
+        bnd.dstAddrMode = deCONZ::ApsExtAddress;
+        bnd.dstAddress.ext = apsCtrl->getParameter(deCONZ::ParamMacAddress);
+        bnd.dstEndpoint = endpoint();
+        
+        if (bnd.dstEndpoint <= 0)
+        {
+            return false;
+        }
+        
+        DBG_Printf(DBG_ZDP, "0x%016llX [%s] create binding (C) for client cluster 0x%04X on endpoint 0x%02X\n",
+           sensor->address().ext(), qPrintable(sensor->modelId()), srcCluster, srcEndpoint);
     }
 
     if (sensor->mgmtBindSupported())
@@ -2818,11 +2812,10 @@ bool DeRestPluginPrivate::makeBind(Sensor *sensor, quint8 srcEndpoint , quint16 
 
     if (queueBindingTask(bindingTask))
     {
-        ret = true;
+        return true;
     }
     
-    return ret;
-
+    return false;
 }
 
 /*! Creates groups for \p sensor if needed. */
